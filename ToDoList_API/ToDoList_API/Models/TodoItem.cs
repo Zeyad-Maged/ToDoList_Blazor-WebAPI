@@ -4,7 +4,7 @@ namespace ToDoList_API.Models
 {
     public class TodoItem
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         [Required(ErrorMessage = "Title is required")]
         [StringLength(100, MinimumLength = 3, ErrorMessage = "Title must be between 3 and 100 characters")]
@@ -25,7 +25,7 @@ namespace ToDoList_API.Models
         public DateTime? DueDate { get; set; }
 
         public bool IsArchived { get; set; }
-        public int UserAuthId { get; set; }
+        public Guid UserAuthId { get; set; }
         public UserAuth UserAuth { get; set; }
     }
 }

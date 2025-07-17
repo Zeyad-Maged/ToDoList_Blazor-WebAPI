@@ -18,7 +18,7 @@ namespace ToDoList_API.Controllers
         }
 
         [HttpGet("{Id}")]
-        public IActionResult GetTaskById(int Id)
+        public IActionResult GetTaskById(Guid Id)
         {
             var task = _repo.GetTaskById(Id);
             if (task == null)
@@ -48,7 +48,7 @@ namespace ToDoList_API.Controllers
         }
 
         [HttpPut("UpdateTask/{Id}")]
-        public IActionResult UpdateTask([FromBody] UpdateTodoDto dto, int Id)
+        public IActionResult UpdateTask([FromBody] UpdateTodoDto dto, Guid Id)
         {
             var updated = _repo.UpdateTask(dto, Id);
             if (!updated)
@@ -58,7 +58,7 @@ namespace ToDoList_API.Controllers
         }
 
         [HttpDelete("DeleteTask/{Id}")]
-        public IActionResult DeleteTask(int Id)
+        public IActionResult DeleteTask(Guid Id)
         {
             var deleted = _repo.DeleteTask(Id);
             if (!deleted)

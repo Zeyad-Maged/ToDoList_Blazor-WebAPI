@@ -6,9 +6,9 @@ namespace ToDoList_API.Repositories.Interface
     public interface IItemRepo
     {
         bool AddTask(CreateTodoDto dto);
-        bool UpdateTask(UpdateTodoDto dto, int Id);
-        bool DeleteTask(int id);
-        TodoDto GetTaskById(int Id);
+        bool UpdateTask(UpdateTodoDto dto, Guid Id);
+        bool DeleteTask(Guid id);
+        TodoDto GetTaskById(Guid Id);
         List<TodoItem> GetAllTasks();
     }
 }

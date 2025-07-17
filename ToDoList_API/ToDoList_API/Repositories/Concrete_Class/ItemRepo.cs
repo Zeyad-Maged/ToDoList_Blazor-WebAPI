@@ -20,7 +20,7 @@ namespace ToDoList_API.Repositories.Concrete_Class
 
         public bool AddTask(CreateTodoDto dto)
         {
-            int userId = GetUserId();
+            Guid userId = GetUserId();
             var search = _context.Users.FirstOrDefault(i => i.Id == userId);
             if (search == null)
             {
@@ -42,9 +42,9 @@ namespace ToDoList_API.Repositories.Concrete_Class
             return true;
         }
 
-        public bool DeleteTask(int id)
+        public bool DeleteTask(Guid id)
         {
-            int userId = GetUserId();
+            Guid userId = GetUserId();
             var search = _context.todoItems.FirstOrDefault(i => i.Id == id && i.UserAuthId == userId);
             if (search == null)
                 return false;
@@ -56,7 +56,7 @@ namespace ToDoList_API.Repositories.Concrete_Class
 
         public List<TodoItem> GetAllTasks()
         {
-            int userId = GetUserId();
+            Guid userId = GetUserId();
             var list = _context.todoItems
                 .Where(i => i.UserAuthId == userId)
                 .ToList();
@@ -64,9 +64,9 @@ namespace ToDoList_API.Repositories.Concrete_Class
             return list ?? new List<TodoItem>();
         }
 
-        public TodoDto GetTaskById(int id)
+        public TodoDto GetTaskById(Guid id)
         {
-            int userId = GetUserId();
+            Guid userId = GetUserId();
             var search = _context.todoItems.FirstOrDefault(i => i.Id == id && i.UserAuthId == userId);
             if (search == null)
                 return null;
@@ -82,9 +82,9 @@ namespace ToDoList_API.Repositories.Concrete_Class
             };
         }
 
-        public bool UpdateTask(UpdateTodoDto dto, int id)
+        public bool UpdateTask(UpdateTodoDto dto, Guid id)
         {
-            int userId = GetUserId();
+            Guid userId = GetUserId();
             var search = _context.todoItems.FirstOrDefault(i => i.Id == id && i.UserAuthId == userId);
             if (search == null)
                 return false;
@@ -101,14 +101,14 @@ namespace ToDoList_API.Repositories.Concrete_Class
             return true;
         }
 
-        private int GetUserId()
+        private Guid GetUserId()
         {
-            var user = _httpContextAccessor.HttpContext?.User;
+            var userIdString = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (user == null)
-                throw new Exception("User is not authenticated.");
-
-            return int.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier));
+            return Guid.TryParse(userIdString, out var userId)
+                ? userId
+                : throw new UnauthorizedAccessException("Invalid or missing user ID.");
         }
+
     }
 }

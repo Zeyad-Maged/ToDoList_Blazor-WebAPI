@@ -4,7 +4,7 @@ namespace ToDoList_API.Models
 {
     public class UserAuth
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
         public string Name { get; set; }
         public string Email { get; set; }
         public string? PhoneNumber { get; set; }
