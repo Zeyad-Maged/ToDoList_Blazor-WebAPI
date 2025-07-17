@@ -200,7 +200,7 @@
                                                                 .Where(c => string.IsNullOrEmpty(countrySearchQuery) || c.Name.Contains(countrySearchQuery, StringComparison.OrdinalIgnoreCase))
                                                                 .OrderBy(c => c.Name))
                                     {
-                                        <li class="custom-dropdown-item" @onclick:stopPropagation @onclick="() => SelectCountry(country.Code)">
+                                        <li class="custom-dropdown-item" @onclick:stopPropagation @onclick="() => SelectCountry(country.Name)">
                                             <img src="@($"https://flagcdn.com/24x18/{country.Code.ToLower()}.png")" alt="@country.Name flag" class="flag-img" />
                                             <span>@country.Name</span>
                                         </li>

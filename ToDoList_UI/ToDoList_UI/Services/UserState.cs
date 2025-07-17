@@ -2,7 +2,7 @@ namespace ToDoList_UI.Services
 {
     public class UserState
     {
-        public int? UserId { get; set; }
-        public string? Email { get; set; }
+        public Guid? UserAuthId { get; set; }
+        public string? AccessToken { get; set; }
     }
-} 
+}
