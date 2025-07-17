@@ -5,10 +5,10 @@ namespace ToDoList_API.Repositories.Interface
 {
     public interface IItemRepo
     {
-        public bool AddTask(CreateTodoDto dto, int UserAuthId);
-        public bool UpdateTask(UpdateTodoDto dto, int Id);
-        public bool DeleteTask(int id);
-        public TodoDto GetTaskById(int Id);
-        public List<TodoItem> GetAllTasks(int UserAuthId);
+        bool AddTask(CreateTodoDto dto);
+        bool UpdateTask(UpdateTodoDto dto, int Id);
+        bool DeleteTask(int id);
+        TodoDto GetTaskById(int Id);
+        List<TodoItem> GetAllTasks();
     }
 }

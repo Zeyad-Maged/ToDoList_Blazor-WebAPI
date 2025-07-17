@@ -4,6 +4,6 @@ namespace ToDoList_API.Repositories.Interface
 {
     public interface ILoginRepo
     {
-        public int IsValidUser(LoginAuth dto);
+        LoginJWT ValidateUser(LoginAuth dto);
     }
 }

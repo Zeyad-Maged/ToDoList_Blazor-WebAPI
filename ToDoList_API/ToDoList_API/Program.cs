@@ -1,4 +1,7 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using ToDoList_API.Data;
 using ToDoList_API.Models;
 using ToDoList_API.Repositories.Concrete_Class;
@@ -13,6 +16,29 @@ builder.Services.AddCors(options =>
                        .AllowAnyHeader()
                        .AllowAnyMethod());
 });
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidIssuer = builder.Configuration["JwtConfig:Issuer"],
+        ValidAudience = builder.Configuration["JwtConfig:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtConfig:Key"]!)),
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+    };
+});
+builder.Services.AddAuthorization();
+builder.Services.AddHttpContextAccessor();
 
 
 // Add services to the container.
@@ -40,6 +66,7 @@ app.UseHttpsRedirection();
 
 app.UseCors("AllowBlazorOrigin");
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

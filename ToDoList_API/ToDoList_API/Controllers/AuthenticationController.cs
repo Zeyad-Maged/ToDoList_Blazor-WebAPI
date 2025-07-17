@@ -1,39 +1,41 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ToDoList_API.DTOs;
 using ToDoList_API.Repositories.Interface;
 
 namespace ToDoList_API.Controllers
 {
+    [AllowAnonymous] // Important: Login & Signup should be open
     [Route("api/[controller]")]
     [ApiController]
     public class AuthenticationController : ControllerBase
     {
         private readonly ILoginRepo _loginRepo;
         private readonly ISignupRepo _signupRepo;
+
         public AuthenticationController(ILoginRepo loginRepo, ISignupRepo signupRepo)
         {
             _loginRepo = loginRepo;
             _signupRepo = signupRepo;
         }
+
         [HttpPost("login")]
-        public IActionResult Login(LoginAuth dto)
+        public IActionResult Login([FromBody] LoginAuth dto)
         {
-            var search = _loginRepo.IsValidUser(dto);
-            if (search != 0)
-            {
-                return Ok(new { UserAuthId = search });
-            }
-            return Unauthorized("Invalid credentials");
+            var result = _loginRepo.ValidateUser(dto);
+            if (result == null)
+                return Unauthorized("Invalid credentials");
+
+            return Ok(result);
         }
+
         [HttpPost("signup")]
-        public IActionResult Signup(SignUpAuth dto)
+        public IActionResult Signup([FromBody] SignUpAuth dto)
         {
-            if (_signupRepo.AddUser(dto))
-            {
-                return Created();
-            }
-            return BadRequest("Signup failed");
+            if (!_signupRepo.RegisterUser(dto))
+                return BadRequest("Signup failed");
+
+            return StatusCode(201); // Created
         }
     }
 }

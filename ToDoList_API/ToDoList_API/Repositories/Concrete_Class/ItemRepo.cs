@@ -3,25 +3,30 @@ using ToDoList_API.Data;
 using ToDoList_API.DTOs;
 using ToDoList_API.Models;
 using ToDoList_API.Repositories.Interface;
+using System.Security.Claims;
 
 namespace ToDoList_API.Repositories.Concrete_Class
 {
     public class ItemRepo : IItemRepo
     {
         private readonly AppDbContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ItemRepo(AppDbContext context)
+        public ItemRepo(AppDbContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
         }
 
-        public bool AddTask(CreateTodoDto dto, int UserAuthId)
+        public bool AddTask(CreateTodoDto dto)
         {
-            var search = _context.Users.FirstOrDefault(i => i.Id == UserAuthId);
+            int userId = GetUserId();
+            var search = _context.Users.FirstOrDefault(i => i.Id == userId);
             if (search == null)
             {
                 return false;
             }
+
             var task = new TodoItem
             {
                 IsCompleted = false,
@@ -29,8 +34,9 @@ namespace ToDoList_API.Repositories.Concrete_Class
                 DueDate = dto.DueDate,
                 Title = dto.Title,
                 Priority = dto.Priority,
-                UserAuthId = UserAuthId,
+                UserAuthId = userId,
             };
+
             _context.todoItems.Add(task);
             _context.SaveChanges();
             return true;
@@ -38,27 +44,30 @@ namespace ToDoList_API.Repositories.Concrete_Class
 
         public bool DeleteTask(int id)
         {
-            var search = _context.todoItems.FirstOrDefault(i => i.Id == id);
+            int userId = GetUserId();
+            var search = _context.todoItems.FirstOrDefault(i => i.Id == id && i.UserAuthId == userId);
             if (search == null)
                 return false;
+
             _context.todoItems.Remove(search);
             _context.SaveChanges();
             return true;
         }
 
-        public List<TodoItem> GetAllTasks(int UserAuthId)
+        public List<TodoItem> GetAllTasks()
         {
-            var lis = _context.todoItems
-                .Where(i => i.UserAuthId == UserAuthId)
+            int userId = GetUserId();
+            var list = _context.todoItems
+                .Where(i => i.UserAuthId == userId)
                 .ToList();
-            if(lis.IsNullOrEmpty())
-                return null;
-            return lis;
+
+            return list ?? new List<TodoItem>();
         }
 
-        public TodoDto GetTaskById(int Id)
+        public TodoDto GetTaskById(int id)
         {
-            var search = _context.todoItems.FirstOrDefault(i => i.Id == Id);
+            int userId = GetUserId();
+            var search = _context.todoItems.FirstOrDefault(i => i.Id == id && i.UserAuthId == userId);
             if (search == null)
                 return null;
 
@@ -73,9 +82,10 @@ namespace ToDoList_API.Repositories.Concrete_Class
             };
         }
 
-        public bool UpdateTask(UpdateTodoDto dto, int Id)
+        public bool UpdateTask(UpdateTodoDto dto, int id)
         {
-            var search = _context.todoItems.FirstOrDefault(i => i.Id == Id);
+            int userId = GetUserId();
+            var search = _context.todoItems.FirstOrDefault(i => i.Id == id && i.UserAuthId == userId);
             if (search == null)
                 return false;
 
@@ -89,6 +99,16 @@ namespace ToDoList_API.Repositories.Concrete_Class
             _context.todoItems.Update(search);
             _context.SaveChanges();
             return true;
+        }
+
+        private int GetUserId()
+        {
+            var user = _httpContextAccessor.HttpContext?.User;
+
+            if (user == null)
+                throw new Exception("User is not authenticated.");
+
+            return int.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier));
         }
     }
 }

@@ -4,6 +4,6 @@ namespace ToDoList_API.Repositories.Interface
 {
     public interface ISignupRepo
     {
-        public bool AddUser(SignUpAuth dto);
+        bool RegisterUser(SignUpAuth dto);
     }
 }

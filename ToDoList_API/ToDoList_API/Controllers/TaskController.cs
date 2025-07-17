@@ -1,15 +1,17 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ToDoList_API.DTOs;
 using ToDoList_API.Repositories.Interface;
 
 namespace ToDoList_API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class TaskController : ControllerBase
     {
         private readonly IItemRepo _repo;
+
         public TaskController(IItemRepo repo)
         {
             _repo = repo;
@@ -18,47 +20,51 @@ namespace ToDoList_API.Controllers
         [HttpGet("{Id}")]
         public IActionResult GetTaskById(int Id)
         {
-            var get = _repo.GetTaskById(Id);
-            if (get == null)
+            var task = _repo.GetTaskById(Id);
+            if (task == null)
                 return NotFound();
 
-            return Ok(get);
+            return Ok(task);
         }
 
         [HttpGet("GetAllTasks")]
-        public IActionResult GetAllTasks(int UserAuthId) 
+        public IActionResult GetAllTasks()
         {
-            var getall = _repo.GetAllTasks(UserAuthId);
-            if (getall == null)
+            var tasks = _repo.GetAllTasks();
+            if (tasks == null || !tasks.Any())
                 return NotFound();
 
-            return Ok(getall);
+            return Ok(tasks);
         }
+
         [HttpPost("AddTask")]
-        public IActionResult AddTask(CreateTodoDto dto, int UserAuthId) 
+        public IActionResult AddTask([FromBody] CreateTodoDto dto)
         {
-            var add = _repo.AddTask(dto, UserAuthId);
-            if (!add)
-            {
-                return NotFound("User Not Found");
-            }
-            return Created();
+            var added = _repo.AddTask(dto);
+            if (!added)
+                return NotFound("User not found");
+
+            return StatusCode(201);
         }
+
         [HttpPut("UpdateTask/{Id}")]
-        public IActionResult UpdateTask(UpdateTodoDto dto, int Id)
+        public IActionResult UpdateTask([FromBody] UpdateTodoDto dto, int Id)
         {
-            var update = _repo.UpdateTask(dto, Id);
-            if(update == false)
+            var updated = _repo.UpdateTask(dto, Id);
+            if (!updated)
                 return NotFound();
-            return Ok(update);
+
+            return Ok("Task updated");
         }
+
         [HttpDelete("DeleteTask/{Id}")]
         public IActionResult DeleteTask(int Id)
         {
-            var delete = _repo.DeleteTask(Id);
-            if(delete == false)
+            var deleted = _repo.DeleteTask(Id);
+            if (!deleted)
                 return NotFound();
-            return Ok();
+
+            return Ok("Task deleted");
         }
     }
 }

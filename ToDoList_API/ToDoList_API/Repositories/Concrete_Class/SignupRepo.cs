@@ -8,18 +8,19 @@ namespace ToDoList_API.Repositories.Concrete_Class
     public class SignupRepo : ISignupRepo
     {
         private readonly AppDbContext _context;
+
         public SignupRepo(AppDbContext context)
         {
             _context = context;
         }
-        public bool AddUser(SignUpAuth dto)
+
+        public bool RegisterUser(SignUpAuth dto)
         {
-            var search = _context.Users.FirstOrDefault(e => e.Email == dto.Email);
-            if (dto.Password != dto.ConfirmPassword || search != null)
-            {
+            var exists = _context.Users.Any(e => e.Email == dto.Email);
+            if (exists || dto.Password != dto.ConfirmPassword)
                 return false;
-            }
-            var newUser = new UserAuth
+
+            var user = new UserAuth
             {
                 Name = dto.Name,
                 Email = dto.Email,
@@ -29,7 +30,8 @@ namespace ToDoList_API.Repositories.Concrete_Class
                 Password = dto.Password,
                 ConfirmPassword = dto.ConfirmPassword,
             };
-            _context.Users.Add(newUser);
+
+            _context.Users.Add(user);
             _context.SaveChanges();
             return true;
         }
