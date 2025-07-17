@@ -12,7 +12,7 @@ using ToDoList_API.Data;
 namespace ToDoList_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250715070117_InitialMigration")]
+    [Migration("20250717101940_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -74,10 +74,6 @@ namespace ToDoList_API.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ConfirmPassword")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Country")
                         .HasColumnType("nvarchar(max)");

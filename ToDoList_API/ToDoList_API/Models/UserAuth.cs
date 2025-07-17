@@ -1,4 +1,6 @@
-﻿namespace ToDoList_API.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ToDoList_API.Models
 {
     public class UserAuth
     {
@@ -9,7 +11,8 @@
         public DateTime? DateOfBirth { get; set; }
         public string? Country { get; set; }
         public string Password { get; set; }
-        public string ConfirmPassword { get; set; }
+        [NotMapped]
+        public string? ConfirmPassword { get; set; }
         public ICollection<TodoItem> TodoItems { get; set; } = new List<TodoItem>();
     }
 }

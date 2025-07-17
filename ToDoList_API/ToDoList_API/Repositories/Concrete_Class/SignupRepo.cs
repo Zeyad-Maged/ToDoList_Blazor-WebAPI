@@ -32,9 +32,9 @@ namespace ToDoList_API.Repositories.Concrete_Class
                 DateOfBirth = dto.DateOfBirth,
                 Country = dto.Country,
                 Password = hasher.HashPassword(null, dto.Password),
+                ConfirmPassword = null,
             };
 
-            user.ConfirmPassword = dto.ConfirmPassword;
 
             _context.Users.Add(user);
             _context.SaveChanges();
