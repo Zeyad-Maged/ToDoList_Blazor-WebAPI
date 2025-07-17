@@ -1,4 +1,5 @@
-﻿using ToDoList_API.Data;
+﻿using Microsoft.AspNetCore.Identity;
+using ToDoList_API.Data;
 using ToDoList_API.DTOs;
 using ToDoList_API.Models;
 using ToDoList_API.Repositories.Interface;
@@ -14,8 +15,11 @@ namespace ToDoList_API.Repositories.Concrete_Class
             _context = context;
         }
 
+
         public bool RegisterUser(SignUpAuth dto)
         {
+            var hasher = new PasswordHasher<UserAuth>();
+
             var exists = _context.Users.Any(e => e.Email == dto.Email);
             if (exists || dto.Password != dto.ConfirmPassword)
                 return false;
@@ -27,9 +31,10 @@ namespace ToDoList_API.Repositories.Concrete_Class
                 PhoneNumber = dto.PhoneNumber,
                 DateOfBirth = dto.DateOfBirth,
                 Country = dto.Country,
-                Password = dto.Password,
-                ConfirmPassword = dto.ConfirmPassword,
+                Password = hasher.HashPassword(null, dto.Password),
             };
+
+            user.ConfirmPassword = null;
 
             _context.Users.Add(user);
             _context.SaveChanges();
