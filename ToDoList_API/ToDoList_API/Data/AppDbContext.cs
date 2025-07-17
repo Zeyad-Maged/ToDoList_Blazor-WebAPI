@@ -9,6 +9,13 @@ namespace ToDoList_API.Data
         {
 
         }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<UserAuth>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
+        }
         public DbSet<TodoItem> todoItems { get; set; }
+        public DbSet<UserAuth> Users { get; set; }
     }
 }

@@ -15,8 +15,13 @@ namespace ToDoList_API.Repositories.Concrete_Class
             _context = context;
         }
 
-        public void AddTask(CreateTodoDto dto)
+        public bool AddTask(CreateTodoDto dto, int UserAuthId)
         {
+            var search = _context.Users.FirstOrDefault(i => i.Id == UserAuthId);
+            if (search == null)
+            {
+                return false;
+            }
             var task = new TodoItem
             {
                 IsCompleted = false,
@@ -24,9 +29,11 @@ namespace ToDoList_API.Repositories.Concrete_Class
                 DueDate = dto.DueDate,
                 Title = dto.Title,
                 Priority = dto.Priority,
+                UserAuthId = UserAuthId,
             };
             _context.todoItems.Add(task);
             _context.SaveChanges();
+            return true;
         }
 
         public bool DeleteTask(int id)
@@ -39,9 +46,11 @@ namespace ToDoList_API.Repositories.Concrete_Class
             return true;
         }
 
-        public List<TodoItem> GetAllTasks()
+        public List<TodoItem> GetAllTasks(int UserAuthId)
         {
-            var lis = _context.todoItems.ToList();
+            var lis = _context.todoItems
+                .Where(i => i.UserAuthId == UserAuthId)
+                .ToList();
             if(lis.IsNullOrEmpty())
                 return null;
             return lis;

@@ -26,19 +26,23 @@ namespace ToDoList_API.Controllers
         }
 
         [HttpGet("GetAllTasks")]
-        public IActionResult GetAllTasks() 
+        public IActionResult GetAllTasks(int UserAuthId) 
         {
-            var getall = _repo.GetAllTasks();
+            var getall = _repo.GetAllTasks(UserAuthId);
             if (getall == null)
                 return NotFound();
 
             return Ok(getall);
         }
         [HttpPost("AddTask")]
-        public IActionResult AddTask(CreateTodoDto dto) 
+        public IActionResult AddTask(CreateTodoDto dto, int UserAuthId) 
         {
-            _repo.AddTask(dto);
-            return Ok();
+            var add = _repo.AddTask(dto, UserAuthId);
+            if (!add)
+            {
+                return NotFound("User Not Found");
+            }
+            return Created();
         }
         [HttpPut("UpdateTask/{Id}")]
         public IActionResult UpdateTask(UpdateTodoDto dto, int Id)

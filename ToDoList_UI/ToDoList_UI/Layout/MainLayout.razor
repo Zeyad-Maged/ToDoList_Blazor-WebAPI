@@ -1,15 +1,11 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
 @using Blazored.Toast.Configuration
+
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://www.sofco.org/" target="_blank">SOfCO</a>
-        </div>
-
         <article class="content px-4">
             @Body
         </article>
@@ -21,4 +17,4 @@
                 IconType="IconType.FontAwesome"
                 SuccessClass="success-toast-override"
                 SuccessIcon="fa fa-thumbs-up"
-                ErrorIcon="fa fa-bug"/>
+                ErrorIcon="fa fa-bug" />

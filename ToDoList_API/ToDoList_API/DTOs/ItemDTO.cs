@@ -52,6 +52,7 @@ namespace ToDoList_API.DTOs
         public DateTime? DueDate { get; set; }
         public bool IsArchived { get; set; }
         public DateTime CreatedAt { get; set; }
+        public int UserAuthId { get; set; }
     }
 
 }

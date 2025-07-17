@@ -1,638 +1,348 @@
-﻿@page "/"
+﻿@page "/home/{UserAuthId:int}"
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
 @inject IToastService ToastService
+@inject NavigationManager Navigation
+@using Microsoft.AspNetCore.Http.Extensions
+@using Microsoft.AspNetCore.WebUtilities
 
-<style>
-    .btn-custom {
-        border-color: #75BFEC !important;
-        color: #75BFEC !important;
-    }
+<div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 1.5rem;">
+    <button class="logout-btn" style="margin: 0;" @onclick="Logout">
+        <span class="bi bi-box-arrow-right"></span> Logout
+    </button>
+</div>
 
-
-    .todo-container {
-        max-width: 1200px;
-        margin: 2rem auto;
-        padding: 0 1.5rem;
-    }
-
-    .todo-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #2d3748;
-        margin-bottom: 2.5rem;
-        text-align: center;
-        letter-spacing: -0.025em;
-    }
-
-    .card {
-        border: none;
-        border-radius: 10px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        margin-bottom: 2rem;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
-        }
-
-    .card-header {
-        padding: 1.25rem;
-        border-radius: 10px 10px 0 0;
-        background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
-        color: white;
-        font-weight: 600;
-    }
-
-    .card-header-light {
-        background: #f8fafc;
-        border-bottom: 1px solid #e2e8f0;
-        color: #2d3748;
-    }
-
-    .form-control, .form-select {
-        border-radius: 6px;
-        border: 1px solid #d1d5db;
-        padding: 0.75rem 1rem;
-        font-size: 0.95rem;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-
-        .form-control:focus, .form-select:focus {
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-            outline: none;
-        }
-
-    .form-label {
-        font-weight: 500;
-        color: #2d3748;
-        margin-bottom: 0.5rem;
-    }
-
-    .btn {
-        border-radius: 6px;
-        padding: 0.6rem 1.25rem;
-        font-weight: 500;
-        font-size: 0.95rem;
-        transition: all 0.2s ease;
-    }
-
-
-    .btn-outline-primary {
-        border-color: #4f46e5;
-        color: #4f46e5;
-    }
-
-        .btn-outline-primary:hover {
-            background: #4f46e5;
-            color: white;
-        }
-
-    .btn-outline-success {
-        border-color: #10b981;
-        color: #10b981;
-    }
-
-        .btn-outline-success:hover {
-            background: #10b981;
-            color: white;
-        }
-
-    .btn-outline-danger {
-        border-color: #ef4444;
-        color: #ef4444;
-    }
-
-        .btn-outline-danger:hover {
-            background: #ef4444;
-            color: white;
-        }
-
-    .btn-warning {
-        background: #f59e0b;
-        border-color: #f59e0b;
-        color: white;
-    }
-
-        .btn-warning:hover {
-            background: #d97706;
-            border-color: #d97706;
-        }
-
-    .btn-outline-secondary {
-        border-color: #6b7280;
-        color: #6b7280;
-    }
-
-        .btn-outline-secondary:hover {
-            background: #6b7280;
-            color: white;
-        }
-
-    .list-group-item {
-        border: none;
-        border-radius: 8px;
-        margin-bottom: 0.75rem;
-        padding: 1.25rem;
-        background: #ffffff;
-        transition: background-color 0.2s ease, transform 0.2s ease;
-    }
-
-        .list-group-item:hover {
-            background: #f8fafc;
-            transform: translateX(4px);
-        }
-
-    .badge {
-        padding: 0.5rem 1rem;
-        border-radius: 1rem;
-        font-size: 0.85rem;
-        font-weight: 500;
-    }
-
-    .modal-content {
-        border-radius: 10px;
-        border: none;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-    }
-
-    .modal-header {
-        border-bottom: 1px solid #e2e8f0;
-        background: #f8fafc;
-        padding: 1.25rem;
-    }
-
-    .modal-backdrop {
-        background-color: rgba(0, 0, 0, 0.6);
-    }
-
-    .spinner-border {
-        width: 2.25rem;
-        height: 2.25rem;
-        border-width: 0.25em;
-    }
-
-    .task-actions {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-    }
-
-    .task-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #1f2937;
-    }
-
-    .task-description {
-        font-size: 0.9rem;
-        color: #6b7280;
-        line-height: 1.4;
-    }
-
-    .alert-info {
-        border-radius: 8px;
-        background: #e0f2fe;
-        color: #075985;
-        padding: 1rem;
-    }
-
-
-    .priority-selector {
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .priority-option {
-        flex: 1;
-        text-align: center;
-        padding: 0.5rem;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-        .priority-option:hover {
-            transform: translateY(-2px);
-        }
-
-    .priority-1 {
-        background: #10b981;
-        color: white;
-    }
-
-    .priority-2 {
-        background: #06b6d4;
-        color: white;
-    }
-
-    .priority-3 {
-        background: #4f46e5;
-        color: white;
-    }
-
-    .priority-4 {
-        background: #f59e0b;
-        color: white;
-    }
-
-    .priority-5 {
-        background: #ef4444;
-        color: white;
-    }
-
-    .priority-selected {
-        box-shadow: 0 0 0 3px rgba(0,0,0,0.1);
-        font-weight: bold;
-    }
-
-    .last-updated {
-        font-size: 0.8rem;
-        color: #6b7280;
-        margin-left: 0.5rem;
-    }
-
-    .add-task-modal .modal-dialog {
-        max-width: 600px;
-    }
-
-    .tag-input {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        align-items: center;
-    }
-
-    .tag {
-        background: #e0f2fe;
-        color: #075985;
-        padding: 0.25rem 0.75rem;
-        border-radius: 1rem;
-        font-size: 0.8rem;
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-    }
-
-    .tag-remove {
-        cursor: pointer;
-        font-size: 1rem;
-        line-height: 1;
-    }
-
-    .tag-input-field {
-        flex: 1;
-        min-width: 100px;
-    }
-</style>
-
-<div class="todo-container">
-    <div class="card">
-        <div class="card-header">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Task Management</h5>
-                <button @onclick="ShowAddTaskModal" class="btn btn-sm btn-success">
-                    <i class="fas fa-plus me-2"></i>Add Task
-                </button>
-            </div>
-        </div>
+<div class="todo-container" @onclick="CloseAllMenus">
+    <div class="todo-header">
+        <h1 class="sofco-title">SOfCO</h1>
     </div>
-
-    <div class="card">
-        <div class="card-header card-header-light">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Active Tasks</h5>
-                <span class="badge bg-primary">@activeTasks.Count</span>
-            </div>
+    <div class="todo-section add-task-section" style="background: var(--card-bg); box-shadow: var(--shadow); border-radius: 16px; margin-bottom: 2rem;">
+        <h4 class="section-title">Add Task</h4>
+        <div class="add-task-inline" role="form" aria-label="Add new task" style="background: #f8fbff; border-radius: 12px; box-shadow: 0 2px 8px rgba(96, 165, 250, 0.08); padding: 2rem 1.5rem; border: 1px solid var(--border);">
+            <input @bind="newTask.Title" class="form-control add-task-input" placeholder="Task title*" aria-label="Task title input" @onkeydown="@(async e => await HandleAddTaskKeyDown(e))" />
+            <select @bind="newTask.Priority" class="form-select add-task-priority" aria-label="Task priority select" @onkeydown="@(async e => await HandleAddTaskKeyDown(e))">
+                <option value="" disabled selected>Select priority*</option>
+                <option value="1">1 (Highest)</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5 (Lowest)</option>
+            </select>
+            <button class="btn btn-link add-task-more-btn" type="button" @onclick="() => showMoreOptions = !showMoreOptions" aria-label="@(showMoreOptions ? "Hide more options" : "Show more options")">
+                <i class="fas fa-chevron-@(showMoreOptions ? "up" : "down")"></i> @(showMoreOptions ? "Hide Options" : "More Options")
+            </button>
+            <button class="btn btn-primary add-task-submit" type="button" @onclick="AddTask" disabled="@(!IsValidNewTask())" aria-label="Add task">
+                Add Task
+            </button>
         </div>
-        <div class="card-body">
+        @if (showMoreOptions)
+        {
+            <div class="add-task-more-options" style="background: #f0f4ff; border-radius: 10px; box-shadow: 0 2px 8px rgba(96, 165, 250, 0.08); border: 1px solid var(--border); margin-top: 1.5rem;">
+                <input @bind="newTask.Description" class="form-control add-task-desc" placeholder="Description" aria-label="Task description input" />
+                <div class="form-check add-task-range-check">
+                    <input type="checkbox" class="form-check-input" id="dueTodayCheck" @bind="dueTodayChecked" aria-label="Set due date to today" />
+                    <label class="form-check-label" for="dueTodayCheck">Due Today</label>
+                </div>
+                <input type="date" @bind="newTask.DueDate" class="form-control add-task-date" aria-label="Task due date input" disabled="@dueTodayChecked" />
+                @if (dueDateValidationMessage != null)
+                {
+                    <div class="text-danger" style="font-size:0.95rem;">@dueDateValidationMessage</div>
+                }
+            </div>
+        }
+    </div>
+    <div class="todo-section">
+        <h4 class="section-title">Today</h4>
+        <div class="task-list" role="list" aria-label="Today's tasks list">
             @if (isLoading)
             {
                 <div class="text-center py-4">
                     <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
+                        <span class="visually-hidden">Loading tasks...</span>
                     </div>
                 </div>
             }
-            else if (!activeTasks.Any())
-            {
-                <div class="alert alert-info">No active tasks found</div>
-            }
             else
             {
-                <div class="list-group">
-                    @foreach (var task in activeTasks)
+                var todayTasks = allTasks.Where(t => t.DueDate != null && t.DueDate.Value.Date == DateTime.Today && !t.IsArchived).OrderBy(t => t.Priority).ToList();
+                if (!todayTasks.Any())
+                {
+                    <div class="alert alert-info" role="alert">No tasks due today!</div>
+                }
+                else
+                {
+                    @foreach (var task in todayTasks)
                     {
-                        <div class="list-group-item">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="me-3 flex-grow-1">
-                                    <div class="d-flex align-items-center">
-                                        <input type="checkbox"
-                                               @onchange="@(() => ToggleTaskStatus(task))"
-                                               class="form-check-input me-2" />
-                                        <span class="task-title">@task.Title</span>
-                                    </div>
-                                    @if (!string.IsNullOrEmpty(task.Description))
-                                    {
-                                        <div class="task-description mt-1">@task.Description</div>
-                                    }
-                                    <div class="mt-2 d-flex gap-2 flex-wrap">
-                                        <span class="badge @GetPriorityBadgeClass(task.Priority)">
-                                            Priority: @task.Priority
-                                        </span>
-                                        @if (task.DueDate != null)
-                                        {
-                                            <span class="badge @GetDueDateBadgeClass(task.DueDate)">
-                                                Due: @task.DueDate?.ToString("yyyy-MM-dd")
-                                            </span>
-                                        }
-                                        <span class="badge bg-secondary">
-                                            Created: @task.CreatedAt.ToString("yyyy-MM-dd")
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="task-actions">
-                                    <button @onclick="@(() => EditTask(task))" class="btn btn-sm btn-outline-primary">
-                                        Edit
-                                    </button>
-                                    <button @onclick="@(() => CompleteTask(task))" class="btn btn-sm btn-outline-success">
-                                        Complete
-                                    </button>
-                                    <button @onclick="@(() => ArchiveTask(task))" class="btn btn-sm" style="background-color: transparent; border-color: #75BFEC; color: #75BFEC;">
-                                        Archive
-                                    </button>
-                                    <button @onclick="@(() => DeleteTask(task.Id))" class="btn btn-sm btn-outline-danger">
-                                        Delete
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                </div>
-            }
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-header card-header-light">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Completed Tasks</h5>
-                <span class="badge bg-success">@completedTasks.Count</span>
-            </div>
-        </div>
-        <div class="card-body">
-            @if (!completedTasks.Any())
-            {
-                <div class="alert alert-info">No completed tasks found</div>
-            }
-            else
-            {
-                <div class="list-group">
-                    @foreach (var task in completedTasks)
-                    {
-                        <div class="list-group-item bg-success bg-opacity-10">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="me-3 flex-grow-1">
-                                    <div class="d-flex align-items-center">
-                                        <input type="checkbox"
-                                               checked="@task.IsCompleted"
-                                               @onchange="@(() => ToggleTaskStatus(task))"
-                                               class="form-check-input me-2" />
-                                        <span class="task-title text-decoration-line-through text-success">
-                                            @task.Title
-                                        </span>
-                                    </div>
-                                    @if (!string.IsNullOrEmpty(task.Description))
-                                    {
-                                        <div class="task-description mt-1">@task.Description</div>
-                                    }
-                                    <div class="mt-2 d-flex gap-2 flex-wrap">
-                                        <span class="badge @GetPriorityBadgeClass(task.Priority)">
-                                            Priority: @task.Priority
-                                        </span>
-                                        @if (task.DueDate != null)
-                                        {
-                                            <span class="badge @GetDueDateBadgeClass(task.DueDate)">
-                                                Due: @task.DueDate?.ToString("yyyy-MM-dd")
-                                            </span>
-                                        }
-                                        <span class="badge bg-secondary">
-                                            Created: @task.CreatedAt.ToString("yyyy-MM-dd")
-                                        </span>
-                                        <span class="badge bg-success">
-                                            Completed: @task.CompletedDate?.ToString("yyyy-MM-dd")
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="task-actions">
-                                    <button @onclick="@(() => ReopenTask(task))" class="btn btn-sm btn-outline-secondary">
-                                        Reopen
-                                    </button>
-                                    <button @onclick="@(() => ArchiveTask(task))" class="btn btn-sm" style="background-color: transparent; border-color: #75BFEC; color: #75BFEC;">
-                                        Archive
-                                    </button>
-                                    <button @onclick="@(() => DeleteTask(task.Id))" class="btn btn-sm btn-outline-danger">
-                                        Delete
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                </div>
-            }
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-header card-header-light">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Archived Tasks</h5>
-                <span class="badge bg-secondary">@archivedTasks.Count</span>
-            </div>
-        </div>
-        <div class="card-body">
-            @if (!archivedTasks.Any())
-            {
-                <div class="alert alert-info">No archived tasks found</div>
-            }
-            else
-            {
-                <div class="list-group">
-                    @foreach (var task in archivedTasks)
-                    {
-                        <div class="list-group-item bg-light">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="me-3 flex-grow-1">
-                                    <span class="task-title @(task.IsCompleted ? "text-decoration-line-through text-muted" : "")">
-                                        @task.Title
-                                    </span>
-                                    @if (!string.IsNullOrEmpty(task.Description))
-                                    {
-                                        <div class="task-description mt-1">@task.Description</div>
-                                    }
-                                    <div class="mt-2 d-flex gap-2 flex-wrap">
-                                        <span class="badge @GetPriorityBadgeClass(task.Priority)">
-                                            Priority: @task.Priority
-                                        </span>
-                                        @if (task.DueDate != null)
-                                        {
-                                            <span class="badge @GetDueDateBadgeClass(task.DueDate)">
-                                                Due: @task.DueDate?.ToString("yyyy-MM-dd")
-                                            </span>
-                                        }
-                                        <span class="badge bg-secondary">
-                                            Created: @task.CreatedAt.ToString("yyyy-MM-dd")
-                                        </span>
-                                        <span class="badge bg-dark">
-                                            Archived: @task.ArchivedDate?.ToString("yyyy-MM-dd")
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="task-actions">
+                        <div class="task-list-item @(task.IsCompleted ? "completed" : "")" role="listitem" aria-label="@task.Title">
+                            <input type="checkbox" class="task-checkbox" checked="@task.IsCompleted" disabled="@task.IsArchived" @onchange="@(() => ToggleTaskStatus(task))" aria-label="Toggle task completion for @task.Title" />
+                            <div class="task-main">
+                                <span class="task-title">@task.Title</span>
+                                @if (!string.IsNullOrEmpty(task.Description))
+                                {
+                                    <span class="task-desc">@task.Description</span>
+                                }
+                                <div class="task-meta">
+                                    <span class="task-priority priority-@task.Priority">Priority: @task.Priority</span>
+                                    <span class="task-due">Due: Today</span>
                                     @if (task.IsCompleted)
                                     {
-                                        <button @onclick="@(() => ReopenTask(task))" class="btn btn-sm btn-outline-secondary">
-                                            Reopen
-                                        </button>
+                                        <span class="task-completed">Completed: @task.CompletedDate?.ToString("MMM dd, yyyy")</span>
                                     }
-                                    else
+                                    @foreach (var tag in task.Tags)
                                     {
-                                        <button @onclick="@(() => CompleteTask(task))" class="btn btn-sm btn-outline-success">
-                                            Complete
-                                        </button>
+                                        <span class="tag">@tag <i class="fas fa-times tag-remove" @onclick="() => RemoveTag(task, tag)" aria-label="Remove tag @tag"></i></span>
                                     }
-                                    <button @onclick="@(() => UnarchiveTask(task))" class="btn btn-sm btn-outline-success">
-                                        Unarchive
-                                    </button>
-                                    <button @onclick="@(() => DeleteTask(task.Id))" class="btn btn-sm btn-outline-danger">
-                                        Delete
-                                    </button>
                                 </div>
                             </div>
-                        </div>
-                    }
-                </div>
-            }
-        </div>
-    </div>
-
-
-    @if (showAddTaskModal)
-    {
-        <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
-            <div class="modal-dialog modal-dialog-centered add-task-modal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Add New Task</h5>
-                        <button type="button" class="btn-close" @onclick="CloseAddTaskModal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-4">
-                            <label class="form-label">Title*</label>
-                            <input @bind="newTask.Title" class="form-control" />
-                            @if (string.IsNullOrEmpty(newTask.Title))
-                            {
-                                <small class="text-danger mt-1 d-block">Title is required</small>
-                            }
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label">Description</label>
-                            <textarea @bind="newTask.Description" class="form-control" rows="4"></textarea>
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label">Priority*</label>
-                            <div class="priority-selector">
-                                @foreach (var priority in Enumerable.Range(1, 5))
+                            <div class="task-actions">
+                                <button class="icon-btn icon-btn-menu" @onclick:stopPropagation @onclick="() => ToggleMenu(task.Id)" aria-label="More actions for @task.Title" tabindex="0">
+                                    <i class="fas fa-ellipsis-v" aria-hidden="true"></i>
+                                </button>
+                                @if (openMenuTaskId == task.Id)
                                 {
-                                    <div class="priority-option priority-@priority @(newTask.Priority == priority ? "priority-selected" : "")"
-                                         @onclick="@(() => newTask.Priority = priority)">
-                                        @priority
+                                    <div class="task-menu-dropdown" @onclick:stopPropagation>
+                                        <button class="dropdown-item" @onclick="() => StartEditTask(task)"><i class="fas fa-edit"></i> Edit</button>
+                                        @if (!task.IsArchived)
+                                        {
+                                            <button class="dropdown-item" @onclick="() => CompleteTask(task)"><i class="fas fa-check"></i> @(task.IsCompleted ? "Reopen" : "Complete")</button>
+                                            <button class="dropdown-item" @onclick="() => ArchiveTask(task)"><i class="fas fa-archive"></i> Archive</button>
+                                        }
+                                        else
+                                        {
+                                            <button class="dropdown-item" @onclick="() => UnarchiveTask(task)"><i class="fas fa-box-open"></i> Unarchive</button>
+                                        }
+                                        <button class="dropdown-item" @onclick="() => DeleteTask(task.Id)"><i class="fas fa-trash"></i> Delete</button>
                                     </div>
                                 }
                             </div>
-                            @if (newTask.Priority < 1 || newTask.Priority > 5)
-                            {
-                                <small class="text-danger mt-1 d-block">Priority must be between 1 and 5</small>
-                            }
                         </div>
-                        <div class="mb-4">
-                            <label class="form-label">Due Date</label>
-                            <input type="date" @bind="newTask.DueDate" class="form-control" />
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button @onclick="CloseAddTaskModal" class="btn btn-outline-secondary">Cancel</button>
-                        <button @onclick="AddTask" class="btn btn-primary"
-                                disabled="@(!IsValidNewTask())">
-                            Add Task
-                        </button>
+                    }
+                }
+            }
+        </div>
+    </div>
+    <div class="todo-section">
+        <h4 class="section-title">All Tasks</h4>
+        <div class="task-list" role="list" aria-label="All tasks list">
+            @if (isLoading)
+            {
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading tasks...</span>
                     </div>
                 </div>
-            </div>
+            }
+            else if (!allTasks.Any())
+            {
+                <div class="alert alert-info" role="alert">No tasks found. Start by adding a new task!</div>
+            }
+            else
+            {
+                if (activeTasks.Any())
+                {
+                    <div class="task-group-label">Active Tasks</div>
+                    @foreach (var task in activeTasks)
+                    {
+                        <div class="task-list-item @(task.IsCompleted ? "completed" : "") @(task.IsArchived ? "archived" : "")" role="listitem" aria-label="@task.Title">
+                            <input type="checkbox" class="task-checkbox" checked="@task.IsCompleted" disabled="@task.IsArchived" @onchange="@(() => ToggleTaskStatus(task))" aria-label="Toggle task completion for @task.Title" />
+                            <div class="task-main">
+                                <span class="task-title">@task.Title</span>
+                                @if (!string.IsNullOrEmpty(task.Description))
+                                {
+                                    <span class="task-desc">@task.Description</span>
+                                }
+                                <div class="task-meta">
+                                    <span class="task-priority priority-@task.Priority">Priority: @task.Priority</span>
+                                    @if (task.DueDate != null)
+                                    {
+                                        <span class="task-due">Due: @task.DueDate?.ToString("MMM dd, yyyy")</span>
+                                    }
+                                    @if (task.IsCompleted)
+                                    {
+                                        <span class="task-completed">Completed: @task.CompletedDate?.ToString("MMM dd, yyyy")</span>
+                                    }
+                                    @if (task.IsArchived)
+                                    {
+                                        <span class="task-archived">Archived: @task.ArchivedDate?.ToString("MMM dd, yyyy")</span>
+                                    }
+                                    @foreach (var tag in task.Tags)
+                                    {
+                                        <span class="tag">@tag <i class="fas fa-times tag-remove" @onclick="() => RemoveTag(task, tag)" aria-label="Remove tag @tag"></i></span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <button class="icon-btn icon-btn-menu" @onclick:stopPropagation @onclick="() => ToggleMenu(task.Id)" aria-label="More actions for @task.Title" tabindex="0">
+                                    <i class="fas fa-ellipsis-v" aria-hidden="true"></i>
+                                </button>
+                                @if (openMenuTaskId == task.Id)
+                                {
+                                    <div class="task-menu-dropdown" @onclick:stopPropagation>
+                                        <button class="dropdown-item" @onclick="() => StartEditTask(task)"><i class="fas fa-edit"></i> Edit</button>
+                                        @if (!task.IsArchived)
+                                        {
+                                            <button class="dropdown-item" @onclick="() => CompleteTask(task)"><i class="fas fa-check"></i> @(task.IsCompleted ? "Reopen" : "Complete")</button>
+                                            <button class="dropdown-item" @onclick="() => ArchiveTask(task)"><i class="fas fa-archive"></i> Archive</button>
+                                        }
+                                        else
+                                        {
+                                            <button class="dropdown-item" @onclick="() => UnarchiveTask(task)"><i class="fas fa-box-open"></i> Unarchive</button>
+                                        }
+                                        <button class="dropdown-item" @onclick="() => DeleteTask(task.Id)"><i class="fas fa-trash"></i> Delete</button>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                if (completedTasks.Any())
+                {
+                    <div class="task-group-label">Completed Tasks</div>
+                    @foreach (var task in completedTasks)
+                    {
+                        <div class="task-list-item completed" role="listitem" aria-label="@task.Title">
+                            <input type="checkbox" class="task-checkbox" checked="@task.IsCompleted" @onchange="@(() => ToggleTaskStatus(task))" aria-label="Toggle task completion for @task.Title" />
+                            <div class="task-main">
+                                <span class="task-title">@task.Title</span>
+                                @if (!string.IsNullOrEmpty(task.Description))
+                                {
+                                    <span class="task-desc">@task.Description</span>
+                                }
+                                <div class="task-meta">
+                                    <span class="task-priority priority-@task.Priority">Priority: @task.Priority</span>
+                                    @if (task.DueDate != null)
+                                    {
+                                        <span class="task-due">Due: @task.DueDate?.ToString("MMM dd, yyyy")</span>
+                                    }
+                                    <span class="task-completed">Completed: @task.CompletedDate?.ToString("MMM dd, yyyy")</span>
+                                    @foreach (var tag in task.Tags)
+                                    {
+                                        <span class="tag">@tag <i class="fas fa-times tag-remove" @onclick="() => RemoveTag(task, tag)" aria-label="Remove tag @tag"></i></span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <button class="icon-btn icon-btn-menu" @onclick:stopPropagation @onclick="() => ToggleMenu(task.Id)" aria-label="More actions for @task.Title" tabindex="0">
+                                    <i class="fas fa-ellipsis-v" aria-hidden="true"></i>
+                                </button>
+                                @if (openMenuTaskId == task.Id)
+                                {
+                                    <div class="task-menu-dropdown" @onclick:stopPropagation>
+                                        <button class="dropdown-item" @onclick="() => StartEditTask(task)"><i class="fas fa-edit"></i> Edit</button>
+                                        <button class="dropdown-item" @onclick="() => ReopenTask(task)"><i class="fas fa-undo"></i> Reopen</button>
+                                        <button class="dropdown-item" @onclick="() => ArchiveTask(task)"><i class="fas fa-archive"></i> Archive</button>
+                                        <button class="dropdown-item" @onclick="() => DeleteTask(task.Id)"><i class="fas fa-trash"></i> Delete</button>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                if (archivedTasks.Any())
+                {
+                    <div class="task-group-label">Archived Tasks</div>
+                    @foreach (var task in archivedTasks)
+                    {
+                        <div class="task-list-item archived" role="listitem" aria-label="@task.Title">
+                            <input type="checkbox" class="task-checkbox" checked="@task.IsCompleted" disabled aria-label="Task completion status for @task.Title" />
+                            <div class="task-main">
+                                <span class="task-title">@task.Title</span>
+                                @if (!string.IsNullOrEmpty(task.Description))
+                                {
+                                    <span class="task-desc">@task.Description</span>
+                                }
+                                <div class="task-meta">
+                                    <span class="task-priority priority-@task.Priority">Priority: @task.Priority</span>
+                                    @if (task.DueDate != null)
+                                    {
+                                        <span class="task-due">Due: @task.DueDate?.ToString("MMM dd, yyyy")</span>
+                                    }
+                                    <span class="task-archived">Archived: @task.ArchivedDate?.ToString("MMM dd, yyyy")</span>
+                                    @foreach (var tag in task.Tags)
+                                    {
+                                        <span class="tag">@tag <i class="fas fa-times tag-remove" @onclick="() => RemoveTag(task, tag)" aria-label="Remove tag @tag"></i></span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <button class="icon-btn icon-btn-menu" @onclick:stopPropagation @onclick="() => ToggleMenu(task.Id)" aria-label="More actions for @task.Title" tabindex="0">
+                                    <i class="fas fa-ellipsis-v" aria-hidden="true"></i>
+                                </button>
+                                @if (openMenuTaskId == task.Id)
+                                {
+                                    <div class="task-menu-dropdown" @onclick:stopPropagation>
+                                        <button class="dropdown-item" @onclick="() => StartEditTask(task)"><i class="fas fa-edit"></i> Edit</button>
+                                        <button class="dropdown-item" @onclick="() => UnarchiveTask(task)"><i class="fas fa-box-open"></i> Unarchive</button>
+                                        <button class="dropdown-item" @onclick="() => DeleteTask(task.Id)"><i class="fas fa-trash"></i> Delete</button>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+            }
         </div>
-    }
-
+    </div>
     @if (showEditModal)
     {
-        <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
+        <div class="modal show d-block" tabindex="-1" role="dialog" aria-labelledby="editTaskModal" style="background-color: rgba(0,0,0,0.5)">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Edit Task</h5>
-                        <button type="button" class="btn-close" @onclick="CloseEditModal"></button>
+                        <h5 class="modal-title" id="editTaskModal">Edit Task</h5>
+                        <button type="button" class="btn-close" @onclick="CloseEditModal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="mb-4">
-                            <label class="form-label">Title*</label>
-                            <input @bind="editTask.Title" class="form-control" />
+                        <div class="mb-3">
+                            <label class="form-label" for="editTaskTitle">Title*</label>
+                            <input @bind="editTask.Title" class="form-control" id="editTaskTitle" aria-required="true" />
                             @if (string.IsNullOrEmpty(editTask.Title))
                             {
                                 <small class="text-danger mt-1 d-block">Title is required</small>
                             }
                         </div>
-                        <div class="mb-4">
-                            <label class="form-label">Description</label>
-                            <textarea @bind="editTask.Description" class="form-control" rows="4"></textarea>
+                        <div class="mb-3">
+                            <label class="form-label" for="editTaskDescription">Description</label>
+                            <textarea @bind="editTask.Description" class="form-control" rows="4" id="editTaskDescription"></textarea>
                         </div>
                         <div class="row g-3">
-                            <div class="col-md-6 mb-4">
-                                <label class="form-label">Priority*</label>
-                                <input type="number" @bind="editTask.Priority" class="form-control" min="1" max="5" />
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="editTaskPriority">Priority*</label>
+                                <select @bind="editTask.Priority" class="form-select" id="editTaskPriority" aria-required="true">
+                                    <option value="1">1 (Highest)</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5 (Lowest)</option>
+                                </select>
                                 @if (editTask.Priority < 1 || editTask.Priority > 5)
                                 {
                                     <small class="text-danger mt-1 d-block">Priority must be between 1 and 5</small>
                                 }
                             </div>
-                            <div class="col-md-6 mb-4">
-                                <label class="form-label">Due Date</label>
-                                <input type="date" @bind="editTask.DueDate" class="form-control" />
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="editTaskDueDate">Due Date</label>
+                                <input type="date" @bind="editTask.DueDate" class="form-control" id="editTaskDueDate" />
                             </div>
                         </div>
-                        <div class="form-check mb-4">
-                            <input type="checkbox" @bind="editTask.IsCompleted" class="form-check-input" id="completedCheck" />
+                        <div class="form-check mb-3">
+                            <input type="checkbox" @bind="editTask.IsCompleted" class="form-check-input" id="completedCheck" aria-label="Mark task as completed" />
                             <label class="form-check-label" for="completedCheck">Completed</label>
                         </div>
-                        <div class="form-check mb-4">
-                            <input type="checkbox" @bind="editTask.IsArchived" class="form-check-input" id="archivedCheck" />
+                        <div class="form-check mb-3">
+                            <input type="checkbox" @bind="editTask.IsArchived" class="form-check-input" id="archivedCheck" aria-label="Mark task as archived" />
                             <label class="form-check-label" for="archivedCheck">Archived</label>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button @onclick="CloseEditModal" class="btn btn-outline-secondary">Cancel</button>
-                        <button @onclick="SaveTask" class="btn btn-primary"
-                                disabled="@(!IsValidEditTask())">
-                            Save Changes
-                        </button>
+                        <button @onclick="CloseEditModal" class="btn btn-outline-secondary" aria-label="Cancel edit">Cancel</button>
+                        <button @onclick="SaveTask" class="btn btn-primary" disabled="@(!IsValidEditTask())" aria-label="Save task changes">Save Changes</button>
                     </div>
                 </div>
             </div>
         </div>
     }
 </div>
-
 
 @code {
     private class TaskItem
@@ -654,9 +364,9 @@
     {
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public int Priority { get; set; } = 3;
+        public int Priority { get; set; } = 0;
         public DateTime? DueDate { get; set; }
-        public List<string> Tags { get; set; } = new();
+        public int? RangeValue { get; set; }
     }
 
     private class EditTaskDto
@@ -669,16 +379,38 @@
         public bool IsArchived { get; set; }
         public DateTime? CompletedDate { get; set; }
         public DateTime? ArchivedDate { get; set; }
+        public List<string> Tags { get; set; } = new();
     }
 
     private List<TaskItem> allTasks = new();
     private NewTaskDto newTask = new();
     private EditTaskDto editTask = new();
-    private bool showAddTaskModal = false;
     private bool showEditModal = false;
     private bool isLoading = false;
     private int? currentTaskId = null;
-    private string newTag = string.Empty;
+    private int? openMenuTaskId = null;
+    private bool showRange = false;
+    private bool showMoreOptions = false;
+    private bool _dueTodayChecked = false;
+    private bool dueTodayChecked
+    {
+        get => _dueTodayChecked;
+        set
+        {
+            if (_dueTodayChecked != value)
+            {
+                _dueTodayChecked = value;
+                if (_dueTodayChecked)
+                {
+                    newTask.DueDate = DateTime.Today;
+                }
+            }
+        }
+    }
+    private string? dueDateValidationMessage = null;
+
+    [Parameter]
+    public int UserAuthId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -687,9 +419,26 @@
 
     private bool IsValidNewTask()
     {
-        return !string.IsNullOrEmpty(newTask.Title) &&
-               newTask.Priority >= 1 &&
-               newTask.Priority <= 5;
+        dueDateValidationMessage = null;
+        if (string.IsNullOrWhiteSpace(newTask.Title) || newTask.Priority < 1 || newTask.Priority > 5)
+            return false;
+        if (dueTodayChecked)
+        {
+            if (newTask.DueDate == null || newTask.DueDate.Value.Date != DateTime.Today)
+            {
+                dueDateValidationMessage = "Due date must be today.";
+                return false;
+            }
+        }
+        else if (newTask.DueDate != null)
+        {
+            if (newTask.DueDate.Value.Date < DateTime.Today)
+            {
+                dueDateValidationMessage = "Due date cannot be in the past.";
+                return false;
+            }
+        }
+        return true;
     }
 
     private bool IsValidEditTask()
@@ -701,16 +450,18 @@
 
     private async Task LoadTasks()
     {
+        if (UserAuthId == 0) return;
         isLoading = true;
         StateHasChanged();
 
         try
         {
-            allTasks = await Http.GetFromJsonAsync<List<TaskItem>>("https://localhost:7278/api/Task/GetAllTasks") ?? new();
+            allTasks = await Http.GetFromJsonAsync<List<TaskItem>>($"https://localhost:7278/api/Task/GetAllTasks?UserAuthId={UserAuthId}") ?? new();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading tasks: {ex.Message}");
+            ToastService.ShowError($"Error loading tasks: {ex.Message}");
         }
         finally
         {
@@ -720,7 +471,7 @@
     }
 
     private List<TaskItem> activeTasks => allTasks
-        .Where(t => !t.IsCompleted && !t.IsArchived)
+        .Where(t => !t.IsCompleted && !t.IsArchived && (t.DueDate == null || t.DueDate.Value.Date != DateTime.Today))
         .OrderBy(t => t.Priority)
         .ThenBy(t => t.DueDate ?? DateTime.MaxValue)
         .ToList();
@@ -735,30 +486,35 @@
         .OrderByDescending(t => t.ArchivedDate ?? DateTime.MinValue)
         .ToList();
 
-
-
-    private void ShowAddTaskModal()
+    private void StartEditTask(TaskItem task)
     {
-        newTask = new NewTaskDto();
-        showAddTaskModal = true;
-    }
-
-    private void CloseAddTaskModal()
-    {
-        showAddTaskModal = false;
+        currentTaskId = task.Id;
+        editTask = new EditTaskDto
+        {
+            Title = task.Title,
+            Description = task.Description,
+            Priority = task.Priority,
+            DueDate = task.DueDate,
+            IsCompleted = task.IsCompleted,
+            IsArchived = task.IsArchived,
+            CompletedDate = task.CompletedDate,
+            Tags = new List<string>(task.Tags)
+        };
+        showEditModal = true;
     }
 
     private async Task AddTask()
     {
-        if (!IsValidNewTask()) return;
+        if (!IsValidNewTask() || UserAuthId == 0) return;
 
         try
         {
-            var response = await Http.PostAsJsonAsync("https://localhost:7278/api/Task/AddTask", newTask);
+            var response = await Http.PostAsJsonAsync($"https://localhost:7278/api/Task/AddTask?UserAuthId={UserAuthId}", newTask);
             if (response.IsSuccessStatusCode)
             {
                 newTask = new NewTaskDto();
-                showAddTaskModal = false;
+                showMoreOptions = false;
+                showRange = false;
                 await LoadTasks();
                 ToastService.ShowSuccess("Task Added Successfully!");
             }
@@ -766,41 +522,8 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error adding task: {ex.Message}");
+            ToastService.ShowError($"Error adding task: {ex.Message}");
         }
-    }
-
-    private void HandleTagInput(KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(newTag))
-        {
-            if (!newTask.Tags.Contains(newTag))
-            {
-                newTask.Tags.Add(newTag);
-            }
-            newTag = string.Empty;
-        }
-    }
-
-    private void RemoveTag(string tag)
-    {
-        newTask.Tags.Remove(tag);
-    }
-
-    private void EditTask(TaskItem task)
-    {
-        currentTaskId = task.Id;
-        editTask = new EditTaskDto
-            {
-                Title = task.Title,
-                Description = task.Description,
-                Priority = task.Priority,
-                DueDate = task.DueDate,
-                IsCompleted = task.IsCompleted,
-                IsArchived = task.IsArchived,
-                CompletedDate = task.CompletedDate
-            };
-        showEditModal = true;
-        ToastService.ShowWarning($"{task.Title} Task Edited Succesfully!");
     }
 
     private async Task SaveTask()
@@ -820,6 +543,7 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error updating task: {ex.Message}");
+            ToastService.ShowError($"Error updating task: {ex.Message}");
         }
     }
 
@@ -837,21 +561,23 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error deleting task: {ex.Message}");
+            ToastService.ShowError($"Error deleting task: {ex.Message}");
         }
     }
 
     private async Task ToggleTaskStatus(TaskItem task)
     {
         var updatedTask = new EditTaskDto
-            {
-                Title = task.Title,
-                Description = task.Description,
-                Priority = task.Priority,
-                DueDate = task.DueDate,
-                IsCompleted = !task.IsCompleted,
-                IsArchived = task.IsArchived,
-                CompletedDate = !task.IsCompleted ? DateTime.Now : null
-            };
+        {
+            Title = task.Title,
+            Description = task.Description,
+            Priority = task.Priority,
+            DueDate = task.DueDate,
+            IsCompleted = !task.IsCompleted,
+            IsArchived = task.IsArchived,
+            CompletedDate = !task.IsCompleted ? DateTime.Now : null,
+            Tags = new List<string>(task.Tags)
+        };
 
         await UpdateTask(task.Id, updatedTask);
     }
@@ -859,15 +585,16 @@
     private async Task CompleteTask(TaskItem task)
     {
         var updatedTask = new EditTaskDto
-            {
-                Title = task.Title,
-                Description = task.Description,
-                Priority = task.Priority,
-                DueDate = task.DueDate,
-                IsCompleted = true,
-                IsArchived = task.IsArchived,
-                CompletedDate = DateTime.Now
-            };
+        {
+            Title = task.Title,
+            Description = task.Description,
+            Priority = task.Priority,
+            DueDate = task.DueDate,
+            IsCompleted = true,
+            IsArchived = task.IsArchived,
+            CompletedDate = DateTime.Now,
+            Tags = new List<string>(task.Tags)
+        };
 
         await UpdateTask(task.Id, updatedTask);
     }
@@ -875,15 +602,16 @@
     private async Task ReopenTask(TaskItem task)
     {
         var updatedTask = new EditTaskDto
-            {
-                Title = task.Title,
-                Description = task.Description,
-                Priority = task.Priority,
-                DueDate = task.DueDate,
-                IsCompleted = false,
-                IsArchived = task.IsArchived,
-                CompletedDate = null
-            };
+        {
+            Title = task.Title,
+            Description = task.Description,
+            Priority = task.Priority,
+            DueDate = task.DueDate,
+            IsCompleted = false,
+            IsArchived = task.IsArchived,
+            CompletedDate = null,
+            Tags = new List<string>(task.Tags)
+        };
 
         await UpdateTask(task.Id, updatedTask);
     }
@@ -891,15 +619,16 @@
     private async Task ArchiveTask(TaskItem task)
     {
         var updatedTask = new EditTaskDto
-            {
-                Title = task.Title,
-                Description = task.Description,
-                Priority = task.Priority,
-                DueDate = task.DueDate,
-                IsCompleted = task.IsCompleted,
-                IsArchived = true,
-                ArchivedDate = DateTime.Now
-            };
+        {
+            Title = task.Title,
+            Description = task.Description,
+            Priority = task.Priority,
+            DueDate = task.DueDate,
+            IsCompleted = task.IsCompleted,
+            IsArchived = true,
+            ArchivedDate = DateTime.Now,
+            Tags = new List<string>(task.Tags)
+        };
 
         await UpdateTask(task.Id, updatedTask);
     }
@@ -907,15 +636,16 @@
     private async Task UnarchiveTask(TaskItem task)
     {
         var updatedTask = new EditTaskDto
-            {
-                Title = task.Title,
-                Description = task.Description,
-                Priority = task.Priority,
-                DueDate = task.DueDate,
-                IsCompleted = task.IsCompleted,
-                IsArchived = false,
-                ArchivedDate = null
-            };
+        {
+            Title = task.Title,
+            Description = task.Description,
+            Priority = task.Priority,
+            DueDate = task.DueDate,
+            IsCompleted = task.IsCompleted,
+            IsArchived = false,
+            ArchivedDate = null,
+            Tags = new List<string>(task.Tags)
+        };
 
         await UpdateTask(task.Id, updatedTask);
     }
@@ -934,7 +664,26 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error updating task: {ex.Message}");
+            ToastService.ShowError($"Error updating task: {ex.Message}");
         }
+    }
+
+    private async Task RemoveTag(TaskItem task, string tag)
+    {
+        var updatedTask = new EditTaskDto
+        {
+            Title = task.Title,
+            Description = task.Description,
+            Priority = task.Priority,
+            DueDate = task.DueDate,
+            IsCompleted = task.IsCompleted,
+            IsArchived = task.IsArchived,
+            CompletedDate = task.CompletedDate,
+            ArchivedDate = task.ArchivedDate,
+            Tags = task.Tags.Where(t => t != tag).ToList()
+        };
+
+        await UpdateTask(task.Id, updatedTask);
     }
 
     private void CloseEditModal()
@@ -943,29 +692,35 @@
         currentTaskId = null;
     }
 
-    private string GetPriorityBadgeClass(int priority)
+    private void ToggleMenu(int taskId)
     {
-        return priority switch
-        {
-            1 => "bg-danger",
-            2 => "bg-warning",
-            3 => "bg-primary",
-            4 => "bg-info",
-            5 => "bg-success",
-            _ => "bg-secondary"
-        };
+        if (openMenuTaskId == taskId)
+            openMenuTaskId = null;
+        else
+            openMenuTaskId = taskId;
     }
 
-    private string GetDueDateBadgeClass(DateTime? dueDate)
+    private void CloseAllMenus()
     {
-        if (!dueDate.HasValue) return "bg-secondary";
+        openMenuTaskId = null;
+    }
 
-        if (dueDate.Value.Date < DateTime.Today)
-            return "bg-danger";
-        if (dueDate.Value.Date == DateTime.Today)
-            return "bg-warning";
-        if (dueDate.Value.Date <= DateTime.Today.AddDays(3))
-            return "bg-info";
-        return "bg-secondary";
+    private async Task HandleAddTaskKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            if (IsValidNewTask())
+            {
+                await AddTask();
+            }
+            else
+            {
+                ToastService.ShowError("Please fill in a title and select a priority between 1 and 5.");
+            }
+        }
+    }
+    private async Task Logout()
+    {
+        Navigation.NavigateTo("/login", true);
     }
 }

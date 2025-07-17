@@ -115,72 +115,83 @@ code {
 
 
 
-
-
 .loader-container {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 100vh;
+    gap: 2rem;
 }
 
 .flipping-cards {
     display: flex;
-    justify-content: space-between;
-    width: 210px; /* Adjust based on the number of cards and their width */
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    max-width: 300px;
 }
 
 .cardflip {
     width: 40px;
     height: 50px;
-    background-color: #337ab7;
+    background-color: #009EDB; /* Matching your brand color */
     color: white;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 18px;
+    font-size: 24px;
     font-weight: bold;
     border-radius: 4px;
-    backface-visibility: hidden;
     transform-style: preserve-3d;
-    animation: flip 2s infinite;
+    animation: flip 1.5s ease-in-out infinite;
     font-family: sans-serif;
 }
 
+    /* Staggered animation delays */
     .cardflip:nth-child(1) {
-        animation-delay: 0s;
+        animation-delay: 0.1s;
     }
 
     .cardflip:nth-child(2) {
-        animation-delay: 0.3s;
+        animation-delay: 0.2s;
     }
 
     .cardflip:nth-child(3) {
-        animation-delay: 0.6s;
+        animation-delay: 0.3s;
     }
 
     .cardflip:nth-child(4) {
-        animation-delay: 0.9s;
+        animation-delay: 0.4s;
     }
 
     .cardflip:nth-child(5) {
-        animation-delay: 1.2s;
-    }
-
-    .cardflip:nth-child(6) {
-        animation-delay: 1.5s;
-    }
-
-    .cardflip:nth-child(7) {
-        animation-delay: 1.8s;
+        animation-delay: 0.5s;
     }
 
 @keyframes flip {
     0%, 100% {
-        transform: rotateY(0deg);
+        transform: rotateY(0deg) scale(1);
+        background-color: #009EDB;
     }
 
     50% {
-        transform: rotateY(180deg);
+        transform: rotateY(180deg) scale(1.1);
+        background-color: #0078b4;
     }
+}
+
+@font-face {
+    font-family: 'Bauhaus93';
+    src: url('../css/Fonts/Bauhaus 93 Regular.ttf') format('truetype');
+    font-display: swap;
+}
+
+.sofco-title {
+    font-family: 'Bauhaus93', sans-serif;
+    font-size: 4rem;
+    color: #009EDB;
+    letter-spacing: 1px;
+    margin: 0;
+    padding: 0;
 }

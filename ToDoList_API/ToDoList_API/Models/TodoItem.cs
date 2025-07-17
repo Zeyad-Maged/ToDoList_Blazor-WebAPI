@@ -25,5 +25,7 @@ namespace ToDoList_API.Models
         public DateTime? DueDate { get; set; }
 
         public bool IsArchived { get; set; }
+        public int UserAuthId { get; set; }
+        public UserAuth UserAuth { get; set; }
     }
 }

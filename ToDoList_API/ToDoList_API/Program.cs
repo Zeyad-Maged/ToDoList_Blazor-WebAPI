@@ -24,6 +24,8 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<AppDbContext>(i => i.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IItemRepo, ItemRepo>();
+builder.Services.AddScoped<ISignupRepo, SignupRepo>();
+builder.Services.AddScoped<ILoginRepo, LoginRepo>();
 
 var app = builder.Build();
 

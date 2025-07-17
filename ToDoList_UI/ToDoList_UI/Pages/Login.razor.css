@@ -1,0 +1,104 @@
+﻿* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+.auth-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url('/background.jpg') no-repeat center center;
+    background-size: cover;
+    z-index: 1;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 500px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.auth-card {
+    width: 100%;
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+    .auth-header h2 {
+        color: #084298;
+        margin-top: 1rem;
+    }
+
+.auth-logo {
+    height: 60px;
+}
+
+.auth-footer {
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    margin-top: 1.5rem;
+    color: #6c757d;
+}
+
+    .auth-footer a {
+        color: #084298;
+        font-weight: 500;
+    }
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.btn-primary {
+    background-color: #084298;
+    border-color: #084298;
+}
+
+.validation-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+}
+
+
+/* Ensure form elements don't cause overflow */
+.space-y-6 > * + * {
+    margin-top: 1.5rem;
+}
+
+.auth-card .form-control, .auth-card .btn {
+    width: 100%;
+}
