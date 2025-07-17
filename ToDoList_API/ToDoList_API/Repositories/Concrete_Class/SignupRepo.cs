@@ -34,7 +34,7 @@ namespace ToDoList_API.Repositories.Concrete_Class
                 Password = hasher.HashPassword(null, dto.Password),
             };
 
-            user.ConfirmPassword = null;
+            user.ConfirmPassword = dto.ConfirmPassword;
 
             _context.Users.Add(user);
             _context.SaveChanges();
