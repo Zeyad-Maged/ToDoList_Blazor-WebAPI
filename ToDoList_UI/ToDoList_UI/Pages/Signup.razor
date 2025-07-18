@@ -200,7 +200,7 @@
                                                                 .Where(c => string.IsNullOrEmpty(countrySearchQuery) || c.Name.Contains(countrySearchQuery, StringComparison.OrdinalIgnoreCase))
                                                                 .OrderBy(c => c.Name))
                                     {
-                                        <li class="custom-dropdown-item" @onclick:stopPropagation @onclick="() => SelectCountry(country.Name)">
+                                        <li class="custom-dropdown-item" @onclick:stopPropagation @onclick="() => SelectCountry(country.Code)">
                                             <img src="@($"https://flagcdn.com/24x18/{country.Code.ToLower()}.png")" alt="@country.Name flag" class="flag-img" />
                                             <span>@country.Name</span>
                                         </li>
@@ -262,7 +262,7 @@
         editContext = new EditContext(signupModel);
         try
         {
-            var response = await Http.GetFromJsonAsync<List<Country>>("/data/countries.json");
+            var response = await Http.GetFromJsonAsync<List<Country>>("https://localhost:7062/data/countries.json");
             Countries = response ?? new List<Country>();
         }
         catch

@@ -9,19 +9,18 @@
 
 <div class="auth-page">
     <div class="auth-container">
-        <div class="auth-card" role="form" aria-label="Login form">
+        <div class="auth-card">
             <div class="auth-header">
                 <h1 class="sofco-title">SOfCO</h1>
                 <h2>Sign in to your account</h2>
                 <p>Access your account today!</p>
             </div>
 
-            <EditForm Model="@loginModel" OnValidSubmit="HandleLogin" OnInvalidSubmit="HandleInvalidSubmit">
+            <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
                 <DataAnnotationsValidator />
-                <ValidationSummary />
 
                 <div class="form-group">
-                    <label for="email">Email address</label>
+                    <label for="email">Email</label>
                     <InputText id="email" @bind-Value="loginModel.Email" class="form-control" />
                     <ValidationMessage For="@(() => loginModel.Email)" />
                 </div>
@@ -32,27 +31,14 @@
                     <ValidationMessage For="@(() => loginModel.Password)" />
                 </div>
 
-                @if (isSubmitting)
-                {
-                    <button type="button" class="btn btn-primary w-100 d-flex justify-content-center align-items-center opacity-75" disabled>
-                        <span class="spinner-border spinner-border-sm me-2"></span>
-                        Signing In...
-                    </button>
-                }
-                else
-                {
-                    <button type="submit" class="btn btn-primary w-100">Sign In</button>
-                }
+                <button type="submit" class="btn btn-primary w-100" disabled="@isSubmitting">
+                    @(isSubmitting ? "Signing In..." : "Sign In")
+                </button>
             </EditForm>
 
             <p class="auth-footer">
                 Don't have an account? <a href="/signup">Sign up</a>
             </p>
-
-            @if (IsLoggedIn)
-            {
-                <button class="btn btn-outline-danger w-100 mt-3" @onclick="Logout">Logout</button>
-            }
         </div>
     </div>
 </div>
@@ -60,23 +46,16 @@
 @code {
     private LoginModel loginModel = new();
     private bool isSubmitting = false;
-    private bool IsLoggedIn = false;
 
     protected override async Task OnInitializedAsync()
     {
-        var token = await JS.InvokeAsync<string>("sessionStorage.getItem", "access_token");
+        @* var token = await JS.InvokeAsync<string>("sessionStorage.getItem", "access_token");
         var userId = await JS.InvokeAsync<string>("sessionStorage.getItem", "user_id");
 
-        if (!string.IsNullOrWhiteSpace(token) && !string.IsNullOrWhiteSpace(userId))
+        if (!string.IsNullOrWhiteSpace(token))
         {
-            IsLoggedIn = true;
-
-            var currentUri = Navigation.ToBaseRelativePath(Navigation.Uri);
-            if (currentUri == "login" || string.IsNullOrEmpty(currentUri))
-            {
-                Navigation.NavigateTo($"/home/{userId}", true);
-            }
-        }
+            Navigation.NavigateTo($"/home/{userId}", true);
+        } *@
     }
 
     private async Task HandleLogin()
@@ -85,35 +64,25 @@
 
         try
         {
-            // Make sure this route exists and accepts POST on your API
             var response = await Http.PostAsJsonAsync("api/Authentication/login", loginModel);
 
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
 
-                if (result is not null && !string.IsNullOrWhiteSpace(result.AccessToken))
-                {
-                    await JS.InvokeVoidAsync("sessionStorage.setItem", "access_token", result.AccessToken);
-                    await JS.InvokeVoidAsync("sessionStorage.setItem", "user_id", result.UserAuthId.ToString());
+                await JS.InvokeVoidAsync("sessionStorage.setItem", "access_token", result.AccessToken);
+                await JS.InvokeVoidAsync("sessionStorage.setItem", "user_id", result.UserAuthId.ToString());
 
-                    ToastService.ShowSuccess("Logged in successfully!");
-                    Navigation.NavigateTo($"/home/{result.UserAuthId}", true);
-                    return;
-                }
-
-                ToastService.ShowError("Invalid server response.");
+                Navigation.NavigateTo($"/home/{result.UserAuthId}", true);
             }
             else
             {
-                var errorText = await response.Content.ReadAsStringAsync();
-                ToastService.ShowError(string.IsNullOrWhiteSpace(errorText) ? "Invalid email or password." : errorText);
+                ToastService.ShowError("Invalid email or password.");
             }
         }
-        catch (Exception ex)
+        catch
         {
-            Console.WriteLine("Login Exception: " + ex.Message);
-            ToastService.ShowError("An unexpected error occurred.");
+            ToastService.ShowError("Something went wrong.");
         }
         finally
         {
@@ -121,36 +90,18 @@
         }
     }
 
-    private void HandleInvalidSubmit()
-    {
-        ToastService.ShowError("Please fill in all fields correctly.");
-    }
-
-    private async Task Logout()
-    {
-        await JS.InvokeVoidAsync("sessionStorage.removeItem", "access_token");
-        await JS.InvokeVoidAsync("sessionStorage.removeItem", "user_id");
-        ToastService.ShowSuccess("Logged out successfully.");
-        IsLoggedIn = false;
-        loginModel = new(); // Reset form
-        StateHasChanged();
-    }
-
     private class LoginModel
     {
-        [Required(ErrorMessage = "Email is required")]
-        [EmailAddress(ErrorMessage = "Invalid email format")]
+        [Required, EmailAddress]
         public string Email { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Password is required")]
+        [Required]
         public string Password { get; set; } = string.Empty;
     }
 
     private class LoginResponse
     {
         public Guid UserAuthId { get; set; }
-        public string Email { get; set; } = string.Empty;
         public string AccessToken { get; set; } = string.Empty;
-        public int ExpiresIn { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿@page "/home/{UserAuthId:int}"
+﻿@page "/home/{UserAuthId}"
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
 @inject IToastService ToastService
@@ -347,7 +347,7 @@
 @code {
     private class TaskItem
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public int Priority { get; set; } = 3;
@@ -387,8 +387,8 @@
     private EditTaskDto editTask = new();
     private bool showEditModal = false;
     private bool isLoading = false;
-    private int? currentTaskId = null;
-    private int? openMenuTaskId = null;
+    private Guid? currentTaskId = null;
+    private Guid? openMenuTaskId = null;
     private bool showRange = false;
     private bool showMoreOptions = false;
     private bool _dueTodayChecked = false;
@@ -408,13 +408,33 @@
         }
     }
     private string? dueDateValidationMessage = null;
+    private string? accessToken;
 
     [Parameter]
-    public int UserAuthId { get; set; }
+    public string UserAuthId { get; set; }
+    private Guid? parsedUserAuthId;
+
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadTasks();
+        accessToken = await JSRuntime.InvokeAsync<string>("sessionStorage.getItem", "access_token");
+        if (string.IsNullOrEmpty(accessToken))
+        {
+            ToastService.ShowError("You must be logged in.");
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        if (Guid.TryParse(UserAuthId, out var guid))
+        {
+            parsedUserAuthId = guid;
+            await LoadTasks();
+        }
+        else
+        {
+            ToastService.ShowError("Invalid user ID.");
+            Navigation.NavigateTo("/login");
+        }
     }
 
     private bool IsValidNewTask()
@@ -450,13 +470,23 @@
 
     private async Task LoadTasks()
     {
-        if (UserAuthId == 0) return;
         isLoading = true;
         StateHasChanged();
 
         try
         {
-            allTasks = await Http.GetFromJsonAsync<List<TaskItem>>($"https://localhost:7278/api/Task/GetAllTasks?UserAuthId={UserAuthId}") ?? new();
+            var request = new HttpRequestMessage(HttpMethod.Get, $"https://localhost:7278/api/Task/GetAllTasks?UserAuthId={UserAuthId}");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+
+            var response = await Http.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                allTasks = await response.Content.ReadFromJsonAsync<List<TaskItem>>() ?? new();
+            }
+            else
+            {
+                ToastService.ShowError("Failed to load tasks. Unauthorized or server error.");
+            }
         }
         catch (Exception ex)
         {
@@ -505,11 +535,15 @@
 
     private async Task AddTask()
     {
-        if (!IsValidNewTask() || UserAuthId == 0) return;
+        if (!IsValidNewTask()) return;
 
         try
         {
-            var response = await Http.PostAsJsonAsync($"https://localhost:7278/api/Task/AddTask?UserAuthId={UserAuthId}", newTask);
+            var request = new HttpRequestMessage(HttpMethod.Post, $"https://localhost:7278/api/Task/AddTask?UserAuthId={UserAuthId}");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+            request.Content = JsonContent.Create(newTask);
+
+            var response = await Http.SendAsync(request);
             if (response.IsSuccessStatusCode)
             {
                 newTask = new NewTaskDto();
@@ -517,6 +551,10 @@
                 showRange = false;
                 await LoadTasks();
                 ToastService.ShowSuccess("Task Added Successfully!");
+            }
+            else
+            {
+                ToastService.ShowError("Failed to add task. Unauthorized or server error.");
             }
         }
         catch (Exception ex)
@@ -532,12 +570,20 @@
 
         try
         {
-            var response = await Http.PutAsJsonAsync($"https://localhost:7278/api/Task/UpdateTask/{currentTaskId}", editTask);
+            var request = new HttpRequestMessage(HttpMethod.Put, $"https://localhost:7278/api/Task/UpdateTask/{currentTaskId}");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+            request.Content = JsonContent.Create(editTask);
+
+            var response = await Http.SendAsync(request);
             if (response.IsSuccessStatusCode)
             {
                 showEditModal = false;
                 await LoadTasks();
                 ToastService.ShowSuccess("Task Saved Successfully!");
+            }
+            else
+            {
+                ToastService.ShowError("Failed to save task. Unauthorized or server error.");
             }
         }
         catch (Exception ex)
@@ -547,15 +593,22 @@
         }
     }
 
-    private async Task DeleteTask(int id)
+    private async Task DeleteTask(Guid id)
     {
         try
         {
-            var response = await Http.DeleteAsync($"https://localhost:7278/api/Task/DeleteTask/{id}");
+            var request = new HttpRequestMessage(HttpMethod.Delete, $"https://localhost:7278/api/Task/DeleteTask/{id}");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+
+            var response = await Http.SendAsync(request);
             if (response.IsSuccessStatusCode)
             {
                 await LoadTasks();
                 ToastService.ShowError("Task Deleted Successfully!");
+            }
+            else
+            {
+                ToastService.ShowError("Failed to delete task. Unauthorized or server error.");
             }
         }
         catch (Exception ex)
@@ -650,15 +703,23 @@
         await UpdateTask(task.Id, updatedTask);
     }
 
-    private async Task UpdateTask(int id, EditTaskDto updatedTask)
+    private async Task UpdateTask(Guid id, EditTaskDto updatedTask)
     {
         try
         {
-            var response = await Http.PutAsJsonAsync($"https://localhost:7278/api/Task/UpdateTask/{id}", updatedTask);
+            var request = new HttpRequestMessage(HttpMethod.Put, $"https://localhost:7278/api/Task/UpdateTask/{id}");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+            request.Content = JsonContent.Create(updatedTask);
+
+            var response = await Http.SendAsync(request);
             if (response.IsSuccessStatusCode)
             {
                 await LoadTasks();
                 ToastService.ShowWarning("Task Updated Successfully!");
+            }
+            else
+            {
+                ToastService.ShowError("Failed to update task. Unauthorized or server error.");
             }
         }
         catch (Exception ex)
@@ -692,7 +753,7 @@
         currentTaskId = null;
     }
 
-    private void ToggleMenu(int taskId)
+    private void ToggleMenu(Guid taskId)
     {
         if (openMenuTaskId == taskId)
             openMenuTaskId = null;
