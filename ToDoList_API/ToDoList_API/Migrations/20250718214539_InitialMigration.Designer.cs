@@ -12,7 +12,7 @@ using ToDoList_API.Data;
 namespace ToDoList_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250717103416_InitialMigration")]
+    [Migration("20250718214539_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -47,8 +47,9 @@ namespace ToDoList_API.Migrations
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("bit");
 
-                    b.Property<int>("Priority")
-                        .HasColumnType("int");
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()

@@ -22,11 +22,9 @@
             <input @bind="newTask.Title" class="form-control add-task-input" placeholder="Task title*" aria-label="Task title input" @onkeydown="@(async e => await HandleAddTaskKeyDown(e))" />
             <select @bind="newTask.Priority" class="form-select add-task-priority" aria-label="Task priority select" @onkeydown="@(async e => await HandleAddTaskKeyDown(e))">
                 <option value="" disabled selected>Select priority*</option>
-                <option value="1">1 (Highest)</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5 (Lowest)</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
             </select>
             <button class="btn btn-link add-task-more-btn" type="button" @onclick="() => showMoreOptions = !showMoreOptions" aria-label="@(showMoreOptions ? "Hide more options" : "Show more options")">
                 <i class="fas fa-chevron-@(showMoreOptions ? "up" : "down")"></i> @(showMoreOptions ? "Hide Options" : "More Options")
@@ -309,16 +307,10 @@
                             <div class="col-md-6 mb-3">
                                 <label class="form-label" for="editTaskPriority">Priority*</label>
                                 <select @bind="editTask.Priority" class="form-select" id="editTaskPriority" aria-required="true">
-                                    <option value="1">1 (Highest)</option>
-                                    <option value="2">2</option>
-                                    <option value="3">3</option>
-                                    <option value="4">4</option>
-                                    <option value="5">5 (Lowest)</option>
+                                    <option value="High">High</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Low">Low</option>
                                 </select>
-                                @if (editTask.Priority < 1 || editTask.Priority > 5)
-                                {
-                                    <small class="text-danger mt-1 d-block">Priority must be between 1 and 5</small>
-                                }
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label" for="editTaskDueDate">Due Date</label>
@@ -345,12 +337,13 @@
 </div>
 
 @code {
+
     private class TaskItem
     {
         public Guid Id { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public int Priority { get; set; } = 3;
+        public string Priority { get; set; } = "Medium";
         public bool IsCompleted { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime? DueDate { get; set; }
@@ -364,7 +357,7 @@
     {
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public int Priority { get; set; } = 0;
+        public string Priority { get; set; } = "Medium";
         public DateTime? DueDate { get; set; }
         public int? RangeValue { get; set; }
     }
@@ -373,7 +366,7 @@
     {
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public int Priority { get; set; }
+        public string Priority { get; set; }
         public DateTime? DueDate { get; set; }
         public bool IsCompleted { get; set; }
         public bool IsArchived { get; set; }
@@ -440,7 +433,7 @@
     private bool IsValidNewTask()
     {
         dueDateValidationMessage = null;
-        if (string.IsNullOrWhiteSpace(newTask.Title) || newTask.Priority < 1 || newTask.Priority > 5)
+        if (string.IsNullOrWhiteSpace(newTask.Title))
             return false;
         if (dueTodayChecked)
         {
@@ -463,9 +456,8 @@
 
     private bool IsValidEditTask()
     {
-        return !string.IsNullOrEmpty(editTask.Title) &&
-               editTask.Priority >= 1 &&
-               editTask.Priority <= 5;
+
+        return !string.IsNullOrEmpty(editTask.Title);
     }
 
     private async Task LoadTasks()
@@ -776,7 +768,7 @@
             }
             else
             {
-                ToastService.ShowError("Please fill in a title and select a priority between 1 and 5.");
+                ToastService.ShowError("Please fill in a title.");
             }
         }
     }

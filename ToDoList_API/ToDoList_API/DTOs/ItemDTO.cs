@@ -12,8 +12,8 @@ namespace ToDoList_API.DTOs
         [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
         public string? Description { get; set; }
 
-        [Range(1, 5, ErrorMessage = "Priority must be between 1 and 5")]
-        public int Priority { get; set; } = 3;
+        [Required]
+        public string Priority { get; set; } = "Medium";
 
         [DataType(DataType.Date)]
         [Display(Name = "Due Date")]
@@ -31,8 +31,8 @@ namespace ToDoList_API.DTOs
         [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
         public string? Description { get; set; }
 
-        [Range(1, 5, ErrorMessage = "Priority must be between 1 and 5")]
-        public int Priority { get; set; }
+        [Required]
+        public string Priority { get; set; } = "Medium";
 
         [DataType(DataType.Date)]
         [Display(Name = "Due Date")]
@@ -47,7 +47,7 @@ namespace ToDoList_API.DTOs
     {
         public string Title { get; set; }
         public string Description { get; set; }
-        public int Priority { get; set; }
+        public string Priority { get; set; }
         public bool IsCompleted { get; set; }
         public DateTime? DueDate { get; set; }
         public bool IsArchived { get; set; }

@@ -13,8 +13,8 @@ namespace ToDoList_API.Models
         [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
         public string? Description { get; set; }
 
-        [Range(1, 5, ErrorMessage = "Priority must be between 1 and 5")]
-        public int Priority { get; set; } = 3;
+        [Required]
+        public string Priority { get; set; } = "Medium";
 
         public bool IsCompleted { get; set; }
 
