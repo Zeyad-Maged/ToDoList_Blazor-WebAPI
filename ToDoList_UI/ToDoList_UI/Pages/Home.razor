@@ -72,7 +72,9 @@
                     @foreach (var task in todayTasks)
                     {
                         <div class="task-list-item @(task.IsCompleted ? "completed" : "")" role="listitem" aria-label="@task.Title">
-                            <input type="checkbox" class="task-checkbox" checked="@task.IsCompleted" disabled="@task.IsArchived" @onchange="@(() => ToggleTaskStatus(task))" aria-label="Toggle task completion for @task.Title" />
+                            <div class="green-checkbox-container">
+                                <input type="checkbox" class="green-checkbox" checked="@task.IsCompleted" disabled="@task.IsArchived" @onchange="@(() => ToggleTaskStatus(task))" aria-label="Toggle task completion for @task.Title" />
+                            </div>
                             <div class="task-main">
                                 <span class="task-title">@task.Title</span>
                                 @if (!string.IsNullOrEmpty(task.Description))
@@ -84,7 +86,7 @@
                                     <span class="task-due">Due: Today</span>
                                     @if (task.IsCompleted)
                                     {
-                                        <span class="task-completed">Completed: @task.CompletedDate?.ToString("MMM dd, yyyy")</span>
+                                        <span class="task-completed">Completed @task.CompletedDate?.ToString("MMM dd, yyyy")</span>
                                     }
                                     @foreach (var tag in task.Tags)
                                     {
@@ -102,7 +104,6 @@
                                         <button class="dropdown-item" @onclick="() => StartEditTask(task)"><i class="fas fa-edit"></i> Edit</button>
                                         @if (!task.IsArchived)
                                         {
-                                            <button class="dropdown-item" @onclick="() => CompleteTask(task)"><i class="fas fa-check"></i> @(task.IsCompleted ? "Reopen" : "Complete")</button>
                                             <button class="dropdown-item" @onclick="() => ArchiveTask(task)"><i class="fas fa-archive"></i> Archive</button>
                                         }
                                         else
@@ -142,7 +143,9 @@
                     @foreach (var task in activeTasks)
                     {
                         <div class="task-list-item @(task.IsCompleted ? "completed" : "") @(task.IsArchived ? "archived" : "")" role="listitem" aria-label="@task.Title">
-                            <input type="checkbox" class="task-checkbox" checked="@task.IsCompleted" disabled="@task.IsArchived" @onchange="@(() => ToggleTaskStatus(task))" aria-label="Toggle task completion for @task.Title" />
+                            <div class="green-checkbox-container">
+                                <input type="checkbox" class="green-checkbox" checked="@task.IsCompleted" disabled="@task.IsArchived" @onchange="@(() => ToggleTaskStatus(task))" aria-label="Toggle task completion for @task.Title" />
+                            </div>
                             <div class="task-main">
                                 <span class="task-title">@task.Title</span>
                                 @if (!string.IsNullOrEmpty(task.Description))
@@ -157,11 +160,11 @@
                                     }
                                     @if (task.IsCompleted)
                                     {
-                                        <span class="task-completed">Completed: @task.CompletedDate?.ToString("MMM dd, yyyy")</span>
+                                        <span class="task-completed">Completed @task.CompletedDate?.ToString("MMM dd, yyyy")</span>
                                     }
                                     @if (task.IsArchived)
                                     {
-                                        <span class="task-archived">Archived: @task.ArchivedDate?.ToString("MMM dd, yyyy")</span>
+                                        <span class="task-archived">Archived @task.ArchivedDate?.ToString("MMM dd, yyyy")</span>
                                     }
                                     @foreach (var tag in task.Tags)
                                     {
@@ -179,7 +182,6 @@
                                         <button class="dropdown-item" @onclick="() => StartEditTask(task)"><i class="fas fa-edit"></i> Edit</button>
                                         @if (!task.IsArchived)
                                         {
-                                            <button class="dropdown-item" @onclick="() => CompleteTask(task)"><i class="fas fa-check"></i> @(task.IsCompleted ? "Reopen" : "Complete")</button>
                                             <button class="dropdown-item" @onclick="() => ArchiveTask(task)"><i class="fas fa-archive"></i> Archive</button>
                                         }
                                         else
@@ -199,7 +201,9 @@
                     @foreach (var task in completedTasks)
                     {
                         <div class="task-list-item completed" role="listitem" aria-label="@task.Title">
-                            <input type="checkbox" class="task-checkbox" checked="@task.IsCompleted" @onchange="@(() => ToggleTaskStatus(task))" aria-label="Toggle task completion for @task.Title" />
+                            <div class="green-checkbox-container">
+                                <input type="checkbox" class="green-checkbox" checked="@task.IsCompleted" @onchange="@(() => ToggleTaskStatus(task))" aria-label="Toggle task completion for @task.Title" />
+                            </div>
                             <div class="task-main">
                                 <span class="task-title">@task.Title</span>
                                 @if (!string.IsNullOrEmpty(task.Description))
@@ -212,7 +216,7 @@
                                     {
                                         <span class="task-due">Due: @task.DueDate?.ToString("MMM dd, yyyy")</span>
                                     }
-                                    <span class="task-completed">Completed: @task.CompletedDate?.ToString("MMM dd, yyyy")</span>
+                                    <span class="task-completed">Completed @task.CompletedDate?.ToString("MMM dd, yyyy")</span>
                                     @foreach (var tag in task.Tags)
                                     {
                                         <span class="tag">@tag <i class="fas fa-times tag-remove" @onclick="() => RemoveTag(task, tag)" aria-label="Remove tag @tag"></i></span>
@@ -227,7 +231,6 @@
                                 {
                                     <div class="task-menu-dropdown" @onclick:stopPropagation>
                                         <button class="dropdown-item" @onclick="() => StartEditTask(task)"><i class="fas fa-edit"></i> Edit</button>
-                                        <button class="dropdown-item" @onclick="() => ReopenTask(task)"><i class="fas fa-undo"></i> Reopen</button>
                                         <button class="dropdown-item" @onclick="() => ArchiveTask(task)"><i class="fas fa-archive"></i> Archive</button>
                                         <button class="dropdown-item" @onclick="() => DeleteTask(task.Id)"><i class="fas fa-trash"></i> Delete</button>
                                     </div>
@@ -242,7 +245,9 @@
                     @foreach (var task in archivedTasks)
                     {
                         <div class="task-list-item archived" role="listitem" aria-label="@task.Title">
-                            <input type="checkbox" class="task-checkbox" checked="@task.IsCompleted" disabled aria-label="Task completion status for @task.Title" />
+                            <div class="green-checkbox-container">
+                                <input type="checkbox" class="green-checkbox" checked="@task.IsCompleted" disabled aria-label="Task completion status for @task.Title" />
+                            </div>
                             <div class="task-main">
                                 <span class="task-title">@task.Title</span>
                                 @if (!string.IsNullOrEmpty(task.Description))
@@ -255,7 +260,7 @@
                                     {
                                         <span class="task-due">Due: @task.DueDate?.ToString("MMM dd, yyyy")</span>
                                     }
-                                    <span class="task-archived">Archived: @task.ArchivedDate?.ToString("MMM dd, yyyy")</span>
+                                    <span class="task-archived">Archived @task.ArchivedDate?.ToString("MMM dd, yyyy")</span>
                                     @foreach (var tag in task.Tags)
                                     {
                                         <span class="tag">@tag <i class="fas fa-times tag-remove" @onclick="() => RemoveTag(task, tag)" aria-label="Remove tag @tag"></i></span>
@@ -316,10 +321,6 @@
                                 <label class="form-label" for="editTaskDueDate">Due Date</label>
                                 <input type="date" @bind="editTask.DueDate" class="form-control" id="editTaskDueDate" />
                             </div>
-                        </div>
-                        <div class="form-check mb-3">
-                            <input type="checkbox" @bind="editTask.IsCompleted" class="form-check-input" id="completedCheck" aria-label="Mark task as completed" />
-                            <label class="form-check-label" for="completedCheck">Completed</label>
                         </div>
                         <div class="form-check mb-3">
                             <input type="checkbox" @bind="editTask.IsArchived" class="form-check-input" id="archivedCheck" aria-label="Mark task as archived" />
@@ -638,23 +639,6 @@
             IsCompleted = true,
             IsArchived = task.IsArchived,
             CompletedDate = DateTime.Now,
-            Tags = new List<string>(task.Tags)
-        };
-
-        await UpdateTask(task.Id, updatedTask);
-    }
-
-    private async Task ReopenTask(TaskItem task)
-    {
-        var updatedTask = new EditTaskDto
-        {
-            Title = task.Title,
-            Description = task.Description,
-            Priority = task.Priority,
-            DueDate = task.DueDate,
-            IsCompleted = false,
-            IsArchived = task.IsArchived,
-            CompletedDate = null,
             Tags = new List<string>(task.Tags)
         };
 
