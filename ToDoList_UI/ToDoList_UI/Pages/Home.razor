@@ -5,33 +5,33 @@
 @inject NavigationManager Navigation
 @using Microsoft.AspNetCore.Http.Extensions
 @using Microsoft.AspNetCore.WebUtilities
+@inject IJSRuntime JS
 
-<div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 1.5rem;">
-    <button class="logout-btn" style="margin: 0;" @onclick="Logout">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <span class="sofco-title" style="font-size: 2rem;  color: #3b82f6;">SOfCO</span>
+    <button class="btn btn-danger" style="margin: 0;" @onclick="Logout">
         <span class="bi bi-box-arrow-right"></span> Logout
     </button>
 </div>
 
 <div class="todo-container" @onclick="CloseAllMenus">
     <div class="todo-header">
-        <h1 class="sofco-title">SOfCO</h1>
+        <h1 style="font-size: 2.5rem; color: #3b82f6; font-family: inherit; font-weight: 800; margin: 0; letter-spacing: -1px;">To Do List</h1>
     </div>
     <div class="todo-section add-task-section" style="background: var(--card-bg); box-shadow: var(--shadow); border-radius: 16px; margin-bottom: 2rem;">
         <h4 class="section-title">Add Task</h4>
         <div class="add-task-inline" role="form" aria-label="Add new task" style="background: #f8fbff; border-radius: 12px; box-shadow: 0 2px 8px rgba(96, 165, 250, 0.08); padding: 2rem 1.5rem; border: 1px solid var(--border);">
             <input @bind="newTask.Title" class="form-control add-task-input" placeholder="Task title*" aria-label="Task title input" @onkeydown="@(async e => await HandleAddTaskKeyDown(e))" />
-            <select @bind="newTask.Priority" class="form-select add-task-priority" aria-label="Task priority select" @onkeydown="@(async e => await HandleAddTaskKeyDown(e))">
+            <label for="addTaskPrioritySelect" class="form-label" style="margin-bottom:0.25rem; font-weight:600; margin-right:0.5rem;">Priority</label>
+            <select id="addTaskPrioritySelect" @bind="newTask.Priority" class="form-select add-task-priority" aria-label="Task priority select" @onkeydown="@(async e => await HandleAddTaskKeyDown(e))">
                 <option value="" disabled selected>Select priority*</option>
                 <option value="High">High</option>
                 <option value="Medium">Medium</option>
                 <option value="Low">Low</option>
             </select>
-            <button class="btn btn-link add-task-more-btn" type="button" @onclick="() => showMoreOptions = !showMoreOptions" aria-label="@(showMoreOptions ? "Hide more options" : "Show more options")">
+            <a class="add-task-more-btn" role="button" tabindex="0" @onclick="() => showMoreOptions = !showMoreOptions" aria-label="@(showMoreOptions ? "Hide more options" : "Show more options")">
                 <i class="fas fa-chevron-@(showMoreOptions ? "up" : "down")"></i> @(showMoreOptions ? "Hide Options" : "More Options")
-            </button>
-            <button class="btn btn-primary add-task-submit" type="button" @onclick="AddTask" disabled="@(!IsValidNewTask())" aria-label="Add task">
-                Add Task
-            </button>
+            </a>
         </div>
         @if (showMoreOptions)
         {
@@ -94,6 +94,14 @@
                                     }
                                 </div>
                             </div>
+                            @if (task.IsArchived)
+                            {
+                                <button class="icon-btn archived-icon" title="Unarchive" @onclick:stopPropagation @onclick="() => UnarchiveTask(task)"><i class="fas fa-box-open"></i></button>
+                            }
+                            else
+                            {
+                                <button class="icon-btn archived-icon" title="Archive" @onclick:stopPropagation @onclick="() => ArchiveTask(task)"><i class="fas fa-archive"></i></button>
+                            }
                             <div class="task-actions">
                                 <button class="icon-btn icon-btn-menu" @onclick:stopPropagation @onclick="() => ToggleMenu(task.Id)" aria-label="More actions for @task.Title" tabindex="0">
                                     <i class="fas fa-ellipsis-v" aria-hidden="true"></i>
@@ -102,14 +110,6 @@
                                 {
                                     <div class="task-menu-dropdown" @onclick:stopPropagation>
                                         <button class="dropdown-item" @onclick="() => StartEditTask(task)"><i class="fas fa-edit"></i> Edit</button>
-                                        @if (!task.IsArchived)
-                                        {
-                                            <button class="dropdown-item" @onclick="() => ArchiveTask(task)"><i class="fas fa-archive"></i> Archive</button>
-                                        }
-                                        else
-                                        {
-                                            <button class="dropdown-item" @onclick="() => UnarchiveTask(task)"><i class="fas fa-box-open"></i> Unarchive</button>
-                                        }
                                         <button class="dropdown-item" @onclick="() => DeleteTask(task.Id)"><i class="fas fa-trash"></i> Delete</button>
                                     </div>
                                 }
@@ -172,6 +172,14 @@
                                     }
                                 </div>
                             </div>
+                            @if (task.IsArchived)
+                            {
+                                <button class="icon-btn archived-icon" title="Unarchive" @onclick:stopPropagation @onclick="() => UnarchiveTask(task)"><i class="fas fa-box-open"></i></button>
+                            }
+                            else
+                            {
+                                <button class="icon-btn archived-icon" title="Archive" @onclick:stopPropagation @onclick="() => ArchiveTask(task)"><i class="fas fa-archive"></i></button>
+                            }
                             <div class="task-actions">
                                 <button class="icon-btn icon-btn-menu" @onclick:stopPropagation @onclick="() => ToggleMenu(task.Id)" aria-label="More actions for @task.Title" tabindex="0">
                                     <i class="fas fa-ellipsis-v" aria-hidden="true"></i>
@@ -180,14 +188,6 @@
                                 {
                                     <div class="task-menu-dropdown" @onclick:stopPropagation>
                                         <button class="dropdown-item" @onclick="() => StartEditTask(task)"><i class="fas fa-edit"></i> Edit</button>
-                                        @if (!task.IsArchived)
-                                        {
-                                            <button class="dropdown-item" @onclick="() => ArchiveTask(task)"><i class="fas fa-archive"></i> Archive</button>
-                                        }
-                                        else
-                                        {
-                                            <button class="dropdown-item" @onclick="() => UnarchiveTask(task)"><i class="fas fa-box-open"></i> Unarchive</button>
-                                        }
                                         <button class="dropdown-item" @onclick="() => DeleteTask(task.Id)"><i class="fas fa-trash"></i> Delete</button>
                                     </div>
                                 }
@@ -231,7 +231,6 @@
                                 {
                                     <div class="task-menu-dropdown" @onclick:stopPropagation>
                                         <button class="dropdown-item" @onclick="() => StartEditTask(task)"><i class="fas fa-edit"></i> Edit</button>
-                                        <button class="dropdown-item" @onclick="() => ArchiveTask(task)"><i class="fas fa-archive"></i> Archive</button>
                                         <button class="dropdown-item" @onclick="() => DeleteTask(task.Id)"><i class="fas fa-trash"></i> Delete</button>
                                     </div>
                                 }
@@ -403,6 +402,7 @@
     }
     private string? dueDateValidationMessage = null;
     private string? accessToken;
+    private bool showPriorityDropdown = false;
 
     [Parameter]
     public string UserAuthId { get; set; }
@@ -759,5 +759,12 @@
     private async Task Logout()
     {
         Navigation.NavigateTo("/login", true);
+        await JS.InvokeVoidAsync("sessionStorage.removeItem", "access_token");
+    }
+
+    private void SelectPriority(string priority)
+    {
+        newTask.Priority = priority;
+        showPriorityDropdown = false;
     }
 }
